@@ -14,7 +14,9 @@
 
 `export YOLO_CONF_THRESHOLD=0.5`
 
-2. 运行项目
+4. 在项目根路径下创建`.env`文件并设置DEEPSEEK_API_KEY
+
+5. 运行项目
 
 `python main.py`
 
