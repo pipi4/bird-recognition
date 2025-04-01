@@ -4,7 +4,7 @@ import os
 import requests
 
 # 加载环境变量
-load_dotenv(dotenv_path="E:\\learnpy\\ebird\\bird-recognition\\.env")
+load_dotenv(dotenv_path=".env")
 API_KEY = os.getenv("DEEPSEEK_API_KEY")
 # 如果环境变量没有正确加载，抛出异常
 if not API_KEY:

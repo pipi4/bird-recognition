@@ -5,14 +5,14 @@ import numpy as np
 import cv2
 
 # URL path: /yolo
-router = APIRouter(tags=["图像上传和识别"], prefix="/yolo")
+yolo_router = APIRouter(tags=["图像上传和识别"], prefix="/yolo")
 
 # in-memory storage for images
 images = []
 
 # region upload
 # URL path: /yolo/upload
-@router.post("/upload",
+@yolo_router.post("/upload",
     status_code=status.HTTP_201_CREATED,
     responses={
         201: {"description": "图像上传成功"},
@@ -48,7 +48,7 @@ async def yolo_image_upload(file: UploadFile) -> ImageAnalysisResponse:
 # endregion
 
 # region download 
-@router.get(
+@yolo_router.get(
     "/download/{image_id}",
     status_code=status.HTTP_200_OK,
     responses={

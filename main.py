@@ -1,14 +1,15 @@
 from fastapi import FastAPI
+import routers.deepseek
+import routers.yolo
 from uvicorn import Server, Config
-from routers.yolo import router
-from routers.deepseek import deepseek_router
 from fastapi.middleware.cors import CORSMiddleware
+import routers
 import os
 
 app = FastAPI()
 
-app.include_router(router)
-app.include_router(deepseek_router)
+app.include_router(routers.yolo.yolo_router)
+app.include_router(routers.deepseek.deepseek_router)
 
 # 允许跨域请求（重要！）
 app.add_middleware(
