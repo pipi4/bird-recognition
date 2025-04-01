@@ -1,3 +1,3 @@
 # bird-recognition
 
-i ma xiao
+i amxiao
