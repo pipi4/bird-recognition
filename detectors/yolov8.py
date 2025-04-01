@@ -4,12 +4,15 @@ import cv2
 import os
 import platform
 from ultralytics import YOLO
+from dotenv import load_dotenv
 
 class YoloV8Detector:
+    # 加载环境变量
+    load_dotenv(".env")
     # 模型路径
-    PATH = os.environ.get("YOLO_WEIGHTS_PATH", "yolov8n.pt")
+    PATH = os.getenv("YOLO_WEIGHTS_PATH", "yolov8n.pt")
     # 置信度阈值
-    CONF_THERESHOLD = float(os.environ.get("YOLO_CONF_THRESHOLD", 0.25))
+    CONF_THERESHOLD = os.getenv("YOLO_CONF_THRESHOLD", 0.25)
 
     def __init__(self, chunked: bytes = None):
         self._bytes = chunked
