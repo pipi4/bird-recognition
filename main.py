@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 import routers.deepseek
 import routers.web
 import routers.yolo
@@ -9,9 +10,17 @@ import os
 
 app = FastAPI()
 
+# 注册路由
 app.include_router(routers.yolo.yolo_router)
 app.include_router(routers.deepseek.deepseek_router)
 app.include_router(routers.web.web_router)
+
+# 挂载static目录
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static",
+)
 
 # 允许跨域请求（重要！）
 app.add_middleware(
