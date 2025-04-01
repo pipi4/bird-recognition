@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from uvicorn import Server, Config
-from routers import router
+from routers.yolo import router
 import os
 
 app = FastAPI()
+
+app.include_router(router)
 
 @app.get("/")
 def get_index():
