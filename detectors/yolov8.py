@@ -8,11 +8,10 @@ from dotenv import load_dotenv
 
 class YoloV8Detector:
     # 加载环境变量
-    load_dotenv(".env")
-    # 模型路径
-    PATH = os.getenv("YOLO_WEIGHTS_PATH", "yolov8n.pt")
+    load_dotenv(dotenv_path=".env")
+    PATH = os.getenv("WEIGHTS_PATH")
     # 置信度阈值
-    CONF_THERESHOLD = os.getenv("YOLO_CONF_THRESHOLD", 0.25)
+    CONF_THERESHOLD = os.getenv("YOLO_CONF_THRESHOLD", 0.10)
 
     def __init__(self, chunked: bytes = None):
         self._bytes = chunked

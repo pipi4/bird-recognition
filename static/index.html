@@ -1,14 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鸟类识别</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta name="description" content="AI驱动的物体识别与知识查询平台">
+    <title>BirdFinder - 智能物体识别助手</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>鸟类识别</h1>
-    <p></p>
-    <script src="/static/script.js"></script>
+    <header class="app-header">
+        <div class="header-content">
+            <h1 aria-label="智能识别">🔍 BirdFinder</h1>
+            <nav class="theme-switch">
+                <button id="themeToggle" aria-label="切换主题">🌓</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- 智能识别模块 -->
+        <section class="card upload-section" aria-labelledby="uploadHeading">
+            <div class="section-header">
+                <h2 id="uploadHeading"><span class="icon">📸</span> 智能识别</h2>
+                <div class="input-group">
+                    <label for="imageUpload" class="custom-upload-btn">
+                        📁 选择图片
+                        <input type="file" id="imageUpload" accept="image/*" hidden>
+                    </label>
+                </div>
+            </div>
+
+            <div class="preview-container">
+                <div class="image-preview" id="uploadPreview">
+                    <div class="placeholder-text">请上传图片进行识别</div>
+                </div>
+                <div class="processing-overlay" id="processing">
+                    <div class="loader"></div>
+                    <p>识别处理中...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 识别结果模块 -->
+        <section class="card result-section" aria-labelledby="resultHeading">
+            <h2 id="resultHeading"><span class="icon">🔍</span> 检测结果</h2>
+            <div class="result-grid">
+                 <div class="detected-objects">
+                    <h3>检测到的物体</h3>
+                    <ul id="detectedObjects" class="object-list">
+                        <li class="placeholder-item">等待识别结果...</li>
+                    </ul>
+                </div>
+
+                <div class="result-image-container">
+                    <div id="resultContainer" class="result-image">
+                        <div class="placeholder-text">识别结果将显示在这里</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- AI对话模块 -->
+        <section class="card chat-section" aria-labelledby="chatHeading">
+            <h2 id="chatHeading"><span class="icon">💬</span> 智能助手</h2>
+            <div class="chat-interface">
+                <div class="chat-history" id="chatBox" role="log"></div>
+                <div class="input-group">
+                    <input type="text" id="question"
+                           placeholder="例如：这是什么鸟？"
+                           aria-label="问题输入"
+                           data-gramm_editor="false">
+                    <button id="sendBtn" class="send-btn">
+                        <span id="sendIcon" class="send-icon">🚀</span> <!-- 初始箭头图标 -->
+                    </button>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
