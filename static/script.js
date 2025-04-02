@@ -16,7 +16,8 @@ function getElementOrThrow(id) {
     return element;
 }
 
-async function safeFetch(url, options) {
+// 图片检测模块专用的safeFetch，不需要流式处理
+async function safeFetchImageDetection(url, options) {
     try {
         // 发起请求
         const response = await fetch(url, options);
@@ -35,6 +36,27 @@ async function safeFetch(url, options) {
     }
 }
 
+// 智能体问答模块专用的safeFetch，支持流式响应
+async function safeFetchChat(url, options) {
+    try {
+        // 发起请求
+        const response = await fetch(url, options);
+
+        // 如果响应不成功，则抛出错误
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // 返回整个响应流
+        return response;
+    } catch (error) {
+        // 捕获错误并输出
+        console.error("请求出错:", error);
+        throw error; // 重新抛出错误
+    }
+}
+
+// 初始化智能体问答模块
 function initChatModule() {
     const elements = {
         chatBox: getElementOrThrow("chatBox"),
@@ -65,19 +87,36 @@ function initChatModule() {
         const loadingMsg = addMessage("🤖 思考中...", "bot");
 
         try {
-            const data = await safeFetch("http://127.0.0.1:8000/deepseek/ask", {
+            const response = await safeFetchChat("http://127.0.0.1:8000/deepseek/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ question })
             });
 
-            loadingMsg.textContent = data.answer || "未找到相关信息";
+            // 处理流式响应
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let text = '';
+
+            // 流式读取数据
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                text += decoder.decode(value, { stream: true });
+
+                // 更新思考中的消息
+                loadingMsg.textContent = text;
+                elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+            }
+
         } catch (error) {
             loadingMsg.textContent = `错误: ${error.message}`;
             console.error("消息发送失败:", error);
         } finally {
-            sendIcon.innerHTML = '🚀';
-            sendIcon.classList.remove('thinking-icon');
+            // 回复后恢复原图标
+            sendIcon.innerHTML = '🚀';  // 恢复箭头图标
+            sendIcon.classList.remove('thinking-icon');  // 移除旋转动画
         }
     }
 
@@ -91,6 +130,7 @@ function initChatModule() {
     }
 }
 
+// 初始化图片上传模块
 function initImageUploadModule() {
     const elements = {
         imageUpload: getElementOrThrow("imageUpload"),
@@ -117,7 +157,7 @@ function initImageUploadModule() {
             const formData = new FormData();
             formData.append("file", file);
 
-            const response = await safeFetch("http://127.0.0.1:8000/yolo/upload", {
+            const response = await safeFetchImageDetection("http://127.0.0.1:8000/yolo/upload", {
                 method: "POST",
                 body: formData
             });
