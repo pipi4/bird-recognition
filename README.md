@@ -10,7 +10,7 @@
 
 2. 设置YOLO模型的权重路径(默认使用yolov8n)
 
-`YOLO_WEIGHTS_PATH=path/to/your/weights`
+`WEIGHTS_PATH=path/to/your/weights`
 
 3. 设置置信度阈值(默认0.25)
 
