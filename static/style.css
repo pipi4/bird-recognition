@@ -80,6 +80,7 @@ body {
     padding: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: sticky;
+
     top: 0;
     z-index: 100;
 }
@@ -469,3 +470,154 @@ body {
     border: 1px solid var(--border-color); /* 使边框颜色适配暗模式 */
 }
 
+/* 导航容器 */
+.nav-container {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* 导航链接列表 */
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.nav-links a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 主题切换按钮 */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-container {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+[data-theme="dark"] .nav-links a {
+    color: var(--text);
+}
+
+[data-theme="dark"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .nav-links a:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 关于我们页面特定样式 */
+.about-container {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 2rem 1rem;
+}
+
+.about-section {
+    grid-column: span 3;
+}
+
+.about-content {
+    padding: 1rem;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.email-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.email-link:hover {
+    color: var(--secondary);
+    text-decoration: underline;
+}
+
+/* 图标样式 */
+.section-header .icon {
+    margin-right: 0.8rem;
+    font-size: 1.2em;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .about-container {
+        grid-template-columns: 1fr;
+    }
+
+    .about-section {
+        grid-column: span 1;
+    }
+}
+
+/* 统一使用data-theme属性选择器 */
+[data-theme="dark"] {
+    --message-user-bg: var(--primary);
+    --message-bot-bg: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] {
+    --message-user-bg: #2563eb;
+    --message-bot-bg: rgba(0, 0, 0, 0.03);
+}
+
+/* 聊天消息样式修正 */
+.message {
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.user-message {
+    background: var(--message-user-bg) !important;
+    color: white !important;
+}
+
+.bot-message {
+    background: var(--message-bot-bg) !important;
+}
+
+/* 修复输入框样式 */
+[data-theme="dark"] .input-group input {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 强制卡片样式更新 */
+[data-theme] .card {
+    transition: background 0.3s ease;
+}

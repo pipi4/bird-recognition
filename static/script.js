@@ -1,13 +1,43 @@
 document.addEventListener("DOMContentLoaded", () => {
     try {
-        initChatModule();
-        initImageUploadModule();
-        initBirdFactModule();  // 初始化鸟类趣闻模块
+        // 获取当前页面路径
+        const currentPage = window.location.pathname.split('/').pop();
+
+        // 只在首页初始化特定模块
+        if (currentPage === 'index.html' || currentPage === '') {
+            initChatModule();
+            initImageUploadModule();
+            initBirdFactModule();
+        }
+
+        // 通用初始化（所有页面都需要）
+        initTheme();
     } catch (error) {
         console.error("初始化失败:", error);
-        alert("系统初始化失败，请刷新页面");
+        // 更友好的错误处理
+        const errorElement = document.getElementById('error-message') || document.body;
+        errorElement.innerHTML = `<div class="error-notice">系统初始化遇到问题，请刷新页面或稍后再试</div>`;
     }
 });
+
+// 初始化主题（通用函数）
+function initTheme() {
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(currentTheme);
+
+    const themeToggle = document.getElementById("themeToggle");
+    if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+            currentTheme = currentTheme === "light" ? "dark" : "light";
+            localStorage.setItem('theme', currentTheme);
+            applyTheme(currentTheme);
+        });
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+}
 
 // 通用工具函数
 function getElementOrThrow(id) {
@@ -19,40 +49,28 @@ function getElementOrThrow(id) {
 // 图片检测模块专用的safeFetch，不需要流式处理
 async function safeFetchImageDetection(url, options) {
     try {
-        // 发起请求
         const response = await fetch(url, options);
-
-        // 如果响应不成功，则抛出错误
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
-        // 返回响应体的 JSON 数据
         return await response.json();
     } catch (error) {
-        // 捕获错误并输出
         console.error("请求出错:", error);
-        throw error; // 重新抛出错误
+        throw error;
     }
 }
 
 // 智能体问答模块专用的safeFetch，支持流式响应
 async function safeFetchChat(url, options) {
     try {
-        // 发起请求
         const response = await fetch(url, options);
-
-        // 如果响应不成功，则抛出错误
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
-        // 返回整个响应流
         return response;
     } catch (error) {
-        // 捕获错误并输出
         console.error("请求出错:", error);
-        throw error; // 重新抛出错误
+        throw error;
     }
 }
 
@@ -64,7 +82,6 @@ function initChatModule() {
         sendButton: getElementOrThrow("sendBtn")
     };
 
-    // 事件监听
     elements.sendButton.addEventListener("click", handleSendMessage);
     elements.inputField.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -81,8 +98,10 @@ function initChatModule() {
         elements.inputField.value = "";
 
         const sendIcon = document.getElementById("sendIcon");
-        sendIcon.innerHTML = '⏳';
-        sendIcon.classList.add('thinking-icon');
+        if (sendIcon) {
+            sendIcon.innerHTML = '⏳';
+            sendIcon.classList.add('thinking-icon');
+        }
 
         const loadingMsg = addMessage("🤖 思考中...", "bot");
 
@@ -93,19 +112,15 @@ function initChatModule() {
                 body: JSON.stringify({ question })
             });
 
-            // 处理流式响应
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let done = false;
             let text = '';
 
-            // 流式读取数据
             while (!done) {
                 const { value, done: doneReading } = await reader.read();
                 done = doneReading;
                 text += decoder.decode(value, { stream: true });
-
-                // 更新思考中的消息
                 loadingMsg.textContent = text;
                 elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
             }
@@ -114,9 +129,10 @@ function initChatModule() {
             loadingMsg.textContent = `错误: ${error.message}`;
             console.error("消息发送失败:", error);
         } finally {
-            // 回复后恢复原图标
-            sendIcon.innerHTML = '🚀';  // 恢复箭头图标
-            sendIcon.classList.remove('thinking-icon');  // 移除旋转动画
+            if (sendIcon) {
+                sendIcon.innerHTML = '🚀';
+                sendIcon.classList.remove('thinking-icon');
+            }
         }
     }
 
@@ -137,7 +153,8 @@ function initImageUploadModule() {
         uploadPreview: getElementOrThrow("uploadPreview"),
         resultContainer: getElementOrThrow("resultContainer"),
         processingOverlay: getElementOrThrow("processing"),
-        detectedObjectsList: getElementOrThrow("detectedObjects")
+        detectedObjectsList: getElementOrThrow("detectedObjects"),
+        wikiInfoContainer: getElementOrThrow("wikiInfoContainer")
     };
 
     elements.imageUpload.addEventListener("change", handleImageSelection);
@@ -173,12 +190,28 @@ function initImageUploadModule() {
     }
 
     function displayDetectionResults(response) {
+        const detectedObjectsList = getElementOrThrow("detectedObjects");
+        detectedObjectsList.innerHTML = "";
+
         if (response.labels && response.labels.length > 0) {
-            elements.detectedObjectsList.innerHTML = response.labels
+            detectedObjectsList.innerHTML = response.labels
                 .map(label => `<li>${label}</li>`)
                 .join("");
+
+            if (response.wiki_info) {
+                const wikiInfo = response.wiki_info;
+                elements.wikiInfoContainer.innerHTML = `
+                    <h3>关于 ${wikiInfo.title || '鸟类'}</h3>
+                    <p>${wikiInfo.summary || "暂无介绍"}</p>
+                    ${wikiInfo.image ? `<img src="${wikiInfo.image}" alt="鸟类图片" style="max-width:200px;">` : ""}
+                    <p><a href="${wikiInfo.wiki_url}" target="_blank">查看更多</a></p>
+                `;
+            } else {
+                elements.wikiInfoContainer.innerHTML = "<p>未找到相关 Wikipedia 介绍。</p>";
+            }
         } else {
-            elements.detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
+            detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
+            elements.wikiInfoContainer.innerHTML = "";
         }
     }
 
@@ -208,7 +241,16 @@ function initImageUploadModule() {
     }
 }
 
+// 初始化鸟类趣闻模块
 function initBirdFactModule() {
+    const factBox = document.getElementById("factBox");
+    const factContainer = document.querySelector(".fact-container");
+
+    if (!factBox || !factContainer) {
+        console.warn('鸟类趣闻模块元素未找到');
+        return;
+    }
+
     const facts = [
         "天鹅可以一辈子与同伴保持伴侣关系。",
         "鸽子能够辨认出不同的画作。",
@@ -224,16 +266,6 @@ function initBirdFactModule() {
         "鹦鹉不仅能模仿人类说话，还能学习不同口音！"
     ];
 
-    const factBox = document.getElementById("factBox");
-    const factContainer = document.querySelector(".fact-container");
-
-    function updateFact() {
-        factBox.innerText = facts[Math.floor(Math.random() * facts.length)];
-    }
-
-    updateFact();
-    let factInterval = setInterval(updateFact, 30000);
-
     const birdImages = [
         "../images/01.jpg",
         "../images/02.jpg",
@@ -243,24 +275,32 @@ function initBirdFactModule() {
         "../images/06.png"
     ];
 
-    function changeBackground() {
-        const randomImage = birdImages[Math.floor(Math.random() * birdImages.length)];
-        factContainer.style.backgroundImage = `url(${randomImage})`;
-    }
-
-    changeBackground();
-    let backgroundInterval = setInterval(changeBackground, 30000);
-
-    document.getElementById("themeToggle").addEventListener("click", () => {
-        document.body.classList.toggle("dark-mode");
-        const currentTheme = document.body.classList.contains("dark-mode") ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", currentTheme);
-
-        if (currentTheme === "dark") {
-            updateFact();
-            changeBackground();
+    const updateFact = () => {
+        if (factBox) {
+            factBox.textContent = facts[Math.floor(Math.random() * facts.length)];
         }
-    });
+    };
+
+    const changeBackground = () => {
+        if (factContainer) {
+            const randomImage = birdImages[Math.floor(Math.random() * birdImages.length)];
+            factContainer.style.backgroundImage = `url(${randomImage})`;
+        }
+    };
+
+    // 初始化执行
+    updateFact();
+    changeBackground();
+
+    // 设置定时器
+    const factInterval = setInterval(updateFact, 30000);
+    const bgInterval = setInterval(changeBackground, 30000);
+
+    // 返回清理函数
+    return () => {
+        clearInterval(factInterval);
+        clearInterval(bgInterval);
+    };
 }
 
 function sanitizeInput(text) {
