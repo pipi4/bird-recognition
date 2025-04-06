@@ -43,7 +43,7 @@ function applyTheme(theme) {
     // 设置背景图片
     const body = document.body;
     if (theme === 'dark') {
-        body.style.backgroundImage = 'url("/static/images/05.png")'; // 替换为你希望的暗色背景图片
+        body.style.backgroundImage = 'url("/static/images/05_dark.png")'; // 替换为你希望的暗色背景图片
         body.style.backgroundSize = 'cover';
     } else {
         body.style.backgroundImage = 'url("/static/images/05.png")'; // 替换为你希望的亮色背景图片
@@ -114,50 +114,59 @@ elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
     });
 
     async function handleSendMessage() {
-        const question = elements.inputField.value.trim();
-        if (!question) return;
+    const question = elements.inputField.value.trim();
+    if (!question) return;
 
-        addMessage(question, "user");
-        elements.inputField.value = "";
+    addMessage(question, "user");
+    elements.inputField.value = "";
 
-        const sendIcon = document.getElementById("sendIcon");
-        if (sendIcon) {
-            sendIcon.innerHTML = '⏳';
-            sendIcon.classList.add('thinking-icon');
-        }
+    const sendIcon = document.getElementById("sendIcon");
+    if (sendIcon) {
+        sendIcon.innerHTML = '⏳';
+        sendIcon.classList.add('thinking-icon');
+    }
 
-        const loadingMsg = addMessage("🤖 思考中...", "bot");
+    // 添加机器人“思考中”的占位消息，返回的是该 DOM 元素
+    const loadingMsg = addMessage("🤖 正在思考中...", "bot");
 
-        try {
-            const response = await safeFetchChat("http://127.0.0.1:8000/deepseek/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question })
-            });
+    try {
+        const response = await safeFetchChat("http://127.0.0.1:8000/deepseek/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question })
+        });
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let done = false;
-            let text = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let text = '';
 
-            while (!done) {
-                const { value, done: doneReading } = await reader.read();
-                done = doneReading;
+        while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+
+            if (value) {
                 text += decoder.decode(value, { stream: true });
-                loadingMsg.textContent = text;
+
+                // 使用 marked 渲染 Markdown + DOMPurify 防注入
+                const rendered = DOMPurify.sanitize(marked.parse(text));
+                loadingMsg.innerHTML = rendered;
+
                 elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
             }
+        }
 
-        } catch (error) {
-            loadingMsg.textContent = `错误: ${error.message}`;
-            console.error("消息发送失败:", error);
-        } finally {
-            if (sendIcon) {
-                sendIcon.innerHTML = '🚀';
-                sendIcon.classList.remove('thinking-icon');
-            }
+    } catch (error) {
+        loadingMsg.textContent = `错误: ${error.message}`;
+        console.error("消息发送失败:", error);
+    } finally {
+        if (sendIcon) {
+            sendIcon.innerHTML = '🚀';
+            sendIcon.classList.remove('thinking-icon');
         }
     }
+}
+
 
     function addMessage(text, sender) {
     const messageDiv = document.createElement("div");
@@ -196,34 +205,41 @@ if (lastDetection) {
     elements.imageUpload.addEventListener("change", handleImageSelection);
 
     async function handleImageSelection(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-        elements.processingOverlay.style.display = "grid";
-        elements.detectedObjectsList.innerHTML = "";
-
-        try {
-            const objectUrl = URL.createObjectURL(file);
-            elements.uploadPreview.style.backgroundImage = `url(${objectUrl})`;
-            elements.uploadPreview.onload = () => URL.revokeObjectURL(objectUrl);
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const response = await safeFetchImageDetection("http://127.0.0.1:8000/yolo/upload", {
-                method: "POST",
-                body: formData
-            });
-
-            displayDetectionResults(response);
-            await displayProcessedImage(response.id);
-        } catch (error) {
-            console.error("图片处理失败:", error);
-            alert(`图片处理失败: ${error.message}`);
-        } finally {
-            elements.processingOverlay.style.display = "none";
-        }
+    // 图片格式验证：检查文件类型是否为图片
+    if (!file.type.startsWith('image/')) {
+        alert('请上传有效的图片文件！');
+        return;  // 终止进一步的处理
     }
+
+    // 如果是图片，则继续进行上传和处理
+    elements.processingOverlay.style.display = "grid";
+    elements.detectedObjectsList.innerHTML = "";
+
+    try {
+        const objectUrl = URL.createObjectURL(file);
+        elements.uploadPreview.style.backgroundImage = `url(${objectUrl})`;
+        elements.uploadPreview.onload = () => URL.revokeObjectURL(objectUrl);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await safeFetchImageDetection("http://127.0.0.1:8000/yolo/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        displayDetectionResults(response);
+        await displayProcessedImage(response.id);
+    } catch (error) {
+        console.error("图片处理失败:", error);
+        alert(`图片处理失败: ${error.message}`);
+    } finally {
+        elements.processingOverlay.style.display = "none";
+    }
+}
 
     function displayDetectionResults(response) {
         localStorage.setItem("lastDetection", JSON.stringify(response));

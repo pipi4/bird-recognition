@@ -654,3 +654,21 @@ body {
     font-size: 1rem;
     border-top: 1px solid var(--border-color);
 }
+
+body.dark-overlay::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* 修改这里数值控制暗化程度 */
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* 让主体内容在遮罩层上面 */
+body > * {
+    position: relative;
+    z-index: 1;
+}
