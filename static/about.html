@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI驱动的物体识别与知识查询平台">
+    <title>关于我们 - BirdFinder</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <h1 aria-label="BirdFinder">🔍 BirdFinder</h1>
+            <nav class="nav-container">
+                <ul class="nav-links">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="about.html" class="active">关于我们</a></li>
+                </ul>
+                <button id="themeToggle" class="theme-toggle" aria-label="切换主题">🌓</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container about-container">
+        <!-- 关于我们内容卡片 -->
+        <section class="card about-section" aria-labelledby="aboutHeading">
+            <div class="section-header">
+                <h2 id="aboutHeading"><span class="icon">🌟</span> 我们的使命</h2>
+            </div>
+            <p class="about-content">BirdFinder 的使命是通过最先进的人工智能技术帮助全球用户精准识别各种鸟类，结合大数据和生态学知识，为大众提供一个便捷、准确且富有教育意义的平台。我们不仅致力于鸟类识别，更希望通过普及鸟类与自然的知识，激发人们对生态环境的关爱与保护意识。</p>
+            <p class="about-content">我们的目标 是让每个人都能成为自然保护的守护者。通过提供易于使用的工具，我们鼓励用户深入了解周围的自然世界，激发探索和保护生态环境的热情。</p>
+        </section>
+
+        <section class="card team-section" aria-labelledby="teamHeading">
+            <div class="section-header">
+                <h2 id="teamHeading"><span class="icon">👥</span> 我们的团队</h2>
+            </div>
+            <p class="about-content">BirdFinder 的团队由一群计算机专业的学生组成，我们分别负责前端、后端和算法开发，致力于将自然科学与人工智能技术结合，打造一款智能鸟类识别与知识查询平台。</p>
+            <p class="about-content">我们的团队成员虽来自不同的技术领域，但每个人都在自己的岗位上精益求精，通过通力合作推动项目的顺利进行。</p>
+
+            <p class="about-content"><strong>团队成员：</strong><br></p>
+            <p class="about-content">皮文浩 — 算法工程师，负责实现鸟类图像识别算法与人工智能模型的训练与优化，提升平台的识别精度和智能水平。</p>
+            <p class="about-content">肖艳平 — 前端开发工程师，负责网站的前端界面设计与用户体验优化，致力于提供简洁、直观且互动性强的界面。</p>
+            <p class="about-content">官家浩 — 后端开发工程师，负责系统架构设计与数据库管理，确保平台的稳定性和数据的高效处理。</p>
+
+        </section>
+
+
+        <section class="card tech-section" aria-labelledby="techHeading">
+            <div class="section-header">
+                <h2 id="techHeading"><span class="icon">🧠</span> 平台功能亮点</h2>
+            </div>
+            <p class="about-content">BirdFinder 项目由我们独立设计并实现，结合了多项现代人工智能与全栈开发技术，旨在为用户提供便捷、准确的鸟类识别与知识获取服务。以下是我们平台的核心技术亮点：</p>
+            <p class="about-content">
+                <strong>🔍 自主训练的图像识别大模型：</strong><br>
+我们基于公开数据集和迁移学习方法，自主训练了鸟类图像识别模型。模型采用深度卷积神经网络结构，具备较强的图像分类与特征提取能力，支持用户上传图片后快速识别鸟的种类。</p>
+            <p class="about-content">
+                <strong>🔗 联通维基百科的知识库：</strong><br>
+识别出鸟类种类后，系统会自动检索维基百科等权威资料来源，为用户呈现详细的鸟类介绍、生态习性及保护现状，实现“识别即科普”的智能化体验。</p>
+            <p class="about-content">
+                <strong>🤖 集成 DeepSeek API 智能助手：</strong><br>
+我们嵌入了 DeepSeek API 接口，构建 AI 问答助手模块，支持自然语言对话。用户可像与专家交流一样，提问鸟类相关问题，系统将基于上下文智能生成答复。</p>
+            <p class="about-content">
+                <strong>⚡ 使用 FastAPI 搭建高性能后端：</strong><br>
+后端采用现代 Python 框架 FastAPI 构建，具备异步处理能力，接口响应快速、易扩展，保障系统稳定高效运行。同时我们使用 RESTful API 规范实现前后端分离架构，方便维护和二次开发。</p>
+        </section>
+
+        <section class="card contact-section" aria-labelledby="contactHeading">
+    <div class="section-header">
+        <h2 id="contactHeading"><span class="icon">📧</span> 联系我们</h2>
+    </div>
+    <p class="about-content">
+        如果您有任何建议或反馈，欢迎通过邮箱与我们联系：
+        <a href="mailto:2025982599@qq.com" class="email-link">2025982599@qq.com</a>。
+    </p>
+    <p class="about-content">
+        我们的项目代码已开源，欢迎访问并提出宝贵意见：
+        <a href="https://github.com/pipi4/bird-recognition" target="_blank" class="email-link">🔗 GitHub - BirdFinder 项目</a>
+    </p>
+</section>
+
+    </main>
+
+    <footer class="fact-container">
+        <p id="factBox">探索自然界的奥秘，从识别一只鸟开始...</p>
+    </footer>
+
+
+</body>
+</html>

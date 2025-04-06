@@ -6,80 +6,113 @@
     <meta name="description" content="AI驱动的物体识别与知识查询平台">
     <title>BirdFinder - 智能物体识别助手</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* 简单内联样式以增强 wiki 显示区布局 */
+        .wiki-card {
+            background: var(--card-bg, #fff);
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-top: 1em;
+        }
+        .wiki-card img {
+            max-width: 100%;
+            margin: 0.5em 0;
+            border-radius: 8px;
+        }
+        .wiki-card h3 {
+            margin-top: 0;
+        }
+    </style>
 </head>
 <body>
-    <header class="app-header">
-        <div class="header-content">
-            <h1 aria-label="智能识别">🔍 BirdFinder</h1>
-            <nav class="theme-switch">
-                <button id="themeToggle" aria-label="切换主题">🌓</button>
-            </nav>
+<header class="app-header">
+    <div class="header-content">
+        <h1 aria-label="智能识别">🔍 BirdFinder</h1>
+
+        <nav class="nav-container">
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="about.html">关于我们</a></li>
+            </ul>
+            <button id="themeToggle" class="theme-toggle" aria-label="切换主题">🌓</button>
+        </nav>
+    </div>
+</header>
+
+<main class="main-container">
+    <!-- 智能识别模块 -->
+    <section class="card upload-section" aria-labelledby="uploadHeading">
+        <div class="section-header">
+            <h2 id="uploadHeading"><span class="icon">📸</span> 智能识别</h2>
+            <div class="input-group">
+                <label for="imageUpload" class="custom-upload-btn">
+                    📁 选择图片
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                </label>
+            </div>
         </div>
-    </header>
 
-    <main class="main-container">
-        <!-- 智能识别模块 -->
-        <section class="card upload-section" aria-labelledby="uploadHeading">
-            <div class="section-header">
-                <h2 id="uploadHeading"><span class="icon">📸</span> 智能识别</h2>
-                <div class="input-group">
-                    <label for="imageUpload" class="custom-upload-btn">
-                        📁 选择图片
-                        <input type="file" id="imageUpload" accept="image/*" hidden>
-                    </label>
-                </div>
+        <div class="preview-container">
+            <div class="image-preview" id="uploadPreview">
+                <div class="placeholder-text">请上传图片进行识别</div>
+            </div>
+            <div class="processing-overlay" id="processing">
+                <div class="loader"></div>
+                <p>识别处理中...</p>
+            </div>
+        </div>
+    </section>
+    <!-- 识别结果模块 -->
+    <section class="card result-section" aria-labelledby="resultHeading">
+        <h2 id="resultHeading"><span class="icon">🔍</span> 检测结果</h2>
+        <div class="result-grid">
+            <div class="detected-objects">
+                <h3>检测到的物体</h3>
+                <ul id="detectedObjects" class="object-list">
+                    <li class="placeholder-item">等待识别结果...</li>
+                </ul>
             </div>
 
-            <div class="preview-container">
-                <div class="image-preview" id="uploadPreview">
-                    <div class="placeholder-text">请上传图片进行识别</div>
-                </div>
-                <div class="processing-overlay" id="processing">
-                    <div class="loader"></div>
-                    <p>识别处理中...</p>
+            <div class="result-image-container">
+                <div id="resultContainer" class="result-image">
+                    <div class="placeholder-text">识别结果将显示在这里</div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- 识别结果模块 -->
-        <section class="card result-section" aria-labelledby="resultHeading">
-            <h2 id="resultHeading"><span class="icon">🔍</span> 检测结果</h2>
-            <div class="result-grid">
-                 <div class="detected-objects">
-                    <h3>检测到的物体</h3>
-                    <ul id="detectedObjects" class="object-list">
-                        <li class="placeholder-item">等待识别结果...</li>
-                    </ul>
-                </div>
+<!-- Wikipedia 介绍（直接显示） -->
+    <section class="card wiki-section" aria-labelledby="wikiInfoHeading">
+        <h2 id="wikiInfoHeading"><span class="icon">📖</span> 鸟类介绍</h2>
+        <div id="wikiInfoContainer">
+            <p>等待识别结果后显示相关信息...</p>
+        </div>
+    </section>
 
-                <div class="result-image-container">
-                    <div id="resultContainer" class="result-image">
-                        <div class="placeholder-text">识别结果将显示在这里</div>
-                    </div>
-                </div>
-
+    <!-- AI对话模块 -->
+    <section class="card chat-section" aria-labelledby="chatHeading">
+        <h2 id="chatHeading"><span class="icon">💬</span> 智能助手</h2>
+        <div class="chat-interface">
+            <div class="chat-history" id="chatBox" role="log"></div>
+            <div class="input-group">
+                <input type="text" id="question"
+                       placeholder="例如：这是什么鸟？"
+                       aria-label="问题输入"
+                       data-gramm_editor="false">
+                <button id="sendBtn" class="send-btn">
+                    <span id="sendIcon" class="send-icon">🚀</span>
+                </button>
             </div>
-        </section>
+        </div>
+    </section>
+</main>
 
-        <!-- AI对话模块 -->
-        <section class="card chat-section" aria-labelledby="chatHeading">
-            <h2 id="chatHeading"><span class="icon">💬</span> 智能助手</h2>
-            <div class="chat-interface">
-                <div class="chat-history" id="chatBox" role="log"></div>
-                <div class="input-group">
-                    <input type="text" id="question"
-                           placeholder="例如：这是什么鸟？"
-                           aria-label="问题输入"
-                           data-gramm_editor="false">
-                    <button id="sendBtn" class="send-btn">
-                        <span id="sendIcon" class="send-icon">🚀</span> <!-- 初始箭头图标 -->
-                    </button>
+<script src="script.js"></script>
 
-                </div>
-            </div>
-        </section>
-    </main>
+<footer class="fact-container">
+    <p id="factBox">正在加载趣闻...</p>
+</footer>
 
-    <script src="/static/script.js"></script>
 </body>
 </html>
