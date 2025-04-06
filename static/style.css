@@ -72,6 +72,12 @@ body {
     color: var(--text);
     line-height: 1.6;
     min-height: 100vh;
+
+     background-image: url('../images/05.png');
+    background-size: cover;       /* 图片铺满页面 */
+    background-repeat: no-repeat; /* 不重复 */
+    background-attachment: fixed; /* 页面滚动时背景固定 */
+    background-position: center;  /* 居中显示 */
 }
 
 .app-header {
@@ -150,6 +156,11 @@ body {
     width: 100%;
 }
 
+/* 让鸟类介绍模块横跨两列 */
+.wiki-section {
+    grid-column: span 2;
+    width: 100%;
+}
 
 
 .card {
@@ -470,6 +481,7 @@ body {
     border: 1px solid var(--border-color); /* 使边框颜色适配暗模式 */
 }
 
+
 /* 导航容器 */
 .nav-container {
     display: flex;
@@ -620,4 +632,25 @@ body {
 /* 强制卡片样式更新 */
 [data-theme] .card {
     transition: background 0.3s ease;
+}
+
+/* 仅对关于我们页面生效，让主容器占满剩余空间，使 footer 贴底 */
+.about-container {
+    min-height: calc(100vh - 160px); /* header + footer 高度的近似值 */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.about-container .card:last-of-type {
+    margin-bottom: auto; /* 推动 footer 到最下方 */
+}
+
+.fact-container {
+    margin-top: auto;
+    padding: 1rem;
+    text-align: center;
+    background-color: #e2e8f0;
+    font-size: 1rem;
+    border-top: 1px solid var(--border-color);
 }

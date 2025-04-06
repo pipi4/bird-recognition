@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 通用初始化（所有页面都需要）
         initTheme();
+        initBirdFactModule();
     } catch (error) {
         console.error("初始化失败:", error);
         // 更友好的错误处理
@@ -22,21 +23,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 初始化主题（通用函数）
 function initTheme() {
-    let currentTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(currentTheme);
+    let currentTheme = localStorage.getItem('theme') || 'light'; // 默认 'light' 模式
+    applyTheme(currentTheme); // 调用 applyTheme 来应用主题
 
+    // 监听主题切换按钮
     const themeToggle = document.getElementById("themeToggle");
     if (themeToggle) {
         themeToggle.addEventListener("click", () => {
             currentTheme = currentTheme === "light" ? "dark" : "light";
-            localStorage.setItem('theme', currentTheme);
-            applyTheme(currentTheme);
+            localStorage.setItem('theme', currentTheme); // 存储当前主题
+            applyTheme(currentTheme); // 重新应用主题
         });
     }
 }
 
+
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    // 设置背景图片
+    const body = document.body;
+    if (theme === 'dark') {
+        body.style.backgroundImage = 'url("../images/05(1).png")'; // 替换为你希望的暗色背景图片
+        body.style.backgroundSize = 'cover';
+    } else {
+        body.style.backgroundImage = 'url("../images/../images/05.png")'; // 替换为你希望的亮色背景图片
+        body.style.backgroundSize = 'cover';
+    }
 }
 
 // 通用工具函数
@@ -81,6 +93,17 @@ function initChatModule() {
         inputField: getElementOrThrow("question"),
         sendButton: getElementOrThrow("sendBtn")
     };
+
+    // 恢复历史聊天记录
+const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+for (const { sender, text } of history) {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${sender}-message`;
+    messageDiv.textContent = sanitizeInput(text);
+    elements.chatBox.appendChild(messageDiv);
+}
+elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+
 
     elements.sendButton.addEventListener("click", handleSendMessage);
     elements.inputField.addEventListener("keydown", (e) => {
@@ -137,17 +160,30 @@ function initChatModule() {
     }
 
     function addMessage(text, sender) {
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `message ${sender}-message`;
-        messageDiv.textContent = sanitizeInput(text);
-        elements.chatBox.appendChild(messageDiv);
-        elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
-        return messageDiv;
-    }
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${sender}-message`;
+    messageDiv.textContent = sanitizeInput(text);
+    elements.chatBox.appendChild(messageDiv);
+    elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+
+    // 保存到 localStorage
+    const stored = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    stored.push({ sender, text });
+    localStorage.setItem("chatHistory", JSON.stringify(stored));
+
+    return messageDiv;
+}
+
 }
 
 // 初始化图片上传模块
 function initImageUploadModule() {
+    const lastDetection = JSON.parse(localStorage.getItem("lastDetection"));
+if (lastDetection) {
+    displayDetectionResults(lastDetection);
+    displayProcessedImage(lastDetection.id);  // 注意：可能需要判断 id 是否存在
+}
+
     const elements = {
         imageUpload: getElementOrThrow("imageUpload"),
         uploadPreview: getElementOrThrow("uploadPreview"),
@@ -190,6 +226,7 @@ function initImageUploadModule() {
     }
 
     function displayDetectionResults(response) {
+        localStorage.setItem("lastDetection", JSON.stringify(response));
         const detectedObjectsList = getElementOrThrow("detectedObjects");
         detectedObjectsList.innerHTML = "";
 
@@ -306,3 +343,13 @@ function initBirdFactModule() {
 function sanitizeInput(text) {
     return text.toString().replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+// main.js 的最后几行
+
+initImageUploadModule();
+initChatModule();
+
+// 可选：页面关闭时清理本地记录
+window.addEventListener("beforeunload", () => {
+    localStorage.removeItem("chatHistory");
+    localStorage.removeItem("lastDetection");
+});
