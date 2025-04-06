@@ -43,10 +43,10 @@ function applyTheme(theme) {
     // 设置背景图片
     const body = document.body;
     if (theme === 'dark') {
-        body.style.backgroundImage = 'url("../images/05(1).png")'; // 替换为你希望的暗色背景图片
+        body.style.backgroundImage = 'url("/static/images/05.png")'; // 替换为你希望的暗色背景图片
         body.style.backgroundSize = 'cover';
     } else {
-        body.style.backgroundImage = 'url("../images/../images/05.png")'; // 替换为你希望的亮色背景图片
+        body.style.backgroundImage = 'url("/static/images/05.png")'; // 替换为你希望的亮色背景图片
         body.style.backgroundSize = 'cover';
     }
 }
@@ -304,12 +304,12 @@ function initBirdFactModule() {
     ];
 
     const birdImages = [
-        "../images/01.jpg",
-        "../images/02.jpg",
-        "../images/03.jpg",
-        "../images/04.png",
-        "../images/05.png",
-        "../images/06.png"
+        "/static/images/01.jpg",
+        "/static/images/02.jpg",
+        "/static/images/03.jpg",
+        "/static/images/04.png",
+        "/static/images/05.png",
+        "/static/images/06.png"
     ];
 
     const updateFact = () => {
