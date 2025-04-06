@@ -2,9 +2,9 @@
 
 ## Preview
 
-![](https://i.imgur.com/RwzYybX.jpeg)
+![](https://i.imgur.com/nbmXcKx.jpeg)
 
-![](https://i.imgur.com/mg2XO7A.jpeg)
+![](https://i.imgur.com/AVR2lx7.jpeg)
 
 ## 项目安装
 
