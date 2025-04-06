@@ -1,0 +1,5 @@
+site_name: 鸟类识别
+nav:
+  - Home: index.md
+  - About: about.md
+theme: readthedocs
