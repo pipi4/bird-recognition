@@ -130,10 +130,14 @@ function initChatModule() {
         const loadingMsg = addMessage("🤖 正在思考中...", "bot");
 
         try {
-            const response = await safeFetchChat("http://127.0.0.1:8000/deepseek/ask", {
+            const response = await safeFetchChat("http://localhost:11434/api/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question })
+                body: JSON.stringify({
+                    model: "deepseek-r1:1.5b",
+                    prompt: question,
+                    stream: true
+                })
             });
 
             const reader = response.body.getReader();
@@ -147,27 +151,33 @@ function initChatModule() {
                 done = doneReading;
 
                 if (value) {
-                    text += decoder.decode(value, { stream: true });
+                    const chunk = decoder.decode(value, { stream: true });
+                    const jsonObjects = chunk.split('\n').filter(Boolean);
 
-                    const rendered = DOMPurify.sanitize(marked.parse(text));
-                    loadingMsg.innerHTML = rendered;
+                    jsonObjects.forEach(jsonObject => {
+                        const parsed = JSON.parse(jsonObject);
+                        if (parsed.response) {
+                            text += parsed.response;
 
-                    const newText = text.slice(lastText.length);
+                            const rendered = DOMPurify.sanitize(marked.parse(text));
+                            loadingMsg.innerHTML = rendered;
 
-                    if (newText) {
-                        // 将新文本与之前积累的文本合并
-                        accumulatedText += newText;
+                            const newText = text.slice(lastText.length);
 
-                        // 每过一段时间（比如 1 秒），就把积累的文本播放
-                        clearTimeout(window.textTimeout);
-                        window.textTimeout = setTimeout(() => {
-                            queueSpeech(accumulatedText);
-                            accumulatedText = '';  // 播放完后清空积累的文本
-                        }, 1000);  // 延迟 1 秒钟进行播放
-                        lastText = text;
-                    }
+                            if (newText) {
+                                accumulatedText += newText;
 
-                    elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+                                clearTimeout(window.textTimeout);
+                                window.textTimeout = setTimeout(() => {
+                                    queueSpeech(accumulatedText);
+                                    accumulatedText = '';
+                                }, 1000);
+                                lastText = text;
+                            }
+
+                            elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+                        }
+                    });
                 }
             }
         } catch (error) {
