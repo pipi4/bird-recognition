@@ -459,8 +459,11 @@ function initImageUploadModule() {
             const canvas = document.createElement('canvas');
             canvas.style.maxWidth = '100%';
             elements.resultContainer.innerHTML = '';
-            elements.resultContainer.appendChild(canvas);
-            const ctx = canvas.getContext('2d');
+            
+            // Create a single image element for frame updates
+            const frameImg = document.createElement('img');
+            frameImg.style.maxWidth = '100%';
+            elements.resultContainer.appendChild(frameImg);
 
             // 处理流式数据
             while (true) {
@@ -481,7 +484,7 @@ function initImageUploadModule() {
                             throw new Error(data.error);
                         }
 
-                        // 更新检测到的标签 - 只显示最新的检测结果
+                        // 更新检测到的标签
                         if (data.labels && data.labels.length > 0) {
                             elements.detectedObjectsList.innerHTML = data.labels
                                 .map(label => `<li>${label}</li>`)
@@ -491,15 +494,9 @@ function initImageUploadModule() {
                         }
 
                         // 显示处理后的帧
-                        const frameData = new Uint8Array(data.frame.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-                        const blob = new Blob([frameData], { type: 'image/jpeg' });
-                        const img = new Image();
-                        img.onload = () => {
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                            ctx.drawImage(img, 0, 0);
-                        };
-                        img.src = URL.createObjectURL(blob);
+                        if (data.frame_id) {
+                            frameImg.src = `http://127.0.0.1:8000/yolo/download/video/${data.frame_id}`;
+                        }
                     } catch (error) {
                         console.error("处理视频帧失败:", error);
                         elements.detectedObjectsList.innerHTML = `<li>处理失败: ${error.message}</li>`;
