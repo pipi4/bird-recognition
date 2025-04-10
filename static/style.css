@@ -177,8 +177,11 @@ body {
 
 .input-group {
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin: 20px 0;
 }
 
 /* 图片上传区域 */
@@ -247,17 +250,24 @@ body {
 
 /* 上传按钮 */
 .custom-upload-btn {
+    width: 160px !important;  /* Force exact width */
+    height: 48px !important;  /* Force exact height */
+    padding: 0 !important;    /* Remove padding */
+    margin: 0 !important;     /* Remove margin */
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
     background: linear-gradient(45deg, var(--primary), var(--secondary));
     color: white;
-    padding: 0.8rem 1.5rem;
     border-radius: 8px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     border: none;
+    font-size: 16px !important;
     font-weight: 500;
+    white-space: nowrap;
+    text-align: center;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* 思考中的旋转动画 */
@@ -274,6 +284,16 @@ body {
 .custom-upload-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.custom-upload-btn.active {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+}
+
+/* Hide file input */
+.custom-upload-btn input[type="file"] {
+    display: none;
 }
 
 /* 结果区域 */

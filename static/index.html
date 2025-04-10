@@ -14,6 +14,7 @@
     <script src="/static/js/base64.js"></script>
     <script src="/static/tts.js"></script>
     <script src="/static/script.js"></script> <!-- 最后引入你的主逻辑 -->
+    <script src="/static/camera.js"></script>
 
 
 </head>
@@ -34,7 +35,6 @@
                 <li><a  onclick="openPopup('historyPopup')" class="nav-btn">历史记录</a></li>
                 <li><a onclick="openPopup('alertsPopup')" class="nav-btn">异常预警</a></li>
                 <li><a onclick="openPopup('dashboardPopup')" class="nav-btn">数据看板</a></li>
-                <li><a onclick="openPopup('videoPopup')" class="nav-btn">视频检测</a></li>
 
 
             </ul>
@@ -57,6 +57,9 @@
                     🎥 选择视频
                     <input type="file" id="videoUpload" accept="video/*" hidden>
                 </label>
+                <button id="cameraBtn" class="custom-upload-btn">
+                    📹 打开相机
+                </button>
             </div>
         </div>
 
@@ -173,48 +176,6 @@
         </div>
     </div>
 </div>
-
-
-<!-- 视频检测弹窗 -->
-<div id="videoPopup" class="popup-overlay">
-    <div class="popup-content video-detect-popup">
-        <span class="close-btn" onclick="closePopup('videoPopup')">&times;</span>
-        <h2>🎥 视频检测</h2>
-
-        <!-- 切换方式 -->
-        <div class="video-mode-switch">
-            <button onclick="switchVideoMode('camera')" id="cameraModeBtn">📷 摄像头检测</button>
-            <button onclick="switchVideoMode('upload')" id="uploadModeBtn">📁 上传视频</button>
-        </div>
-
-        <!-- 内容区域 -->
-        <div class="video-detect-grid">
-            <!-- 左边：摄像头 -->
-            <div class="video-box" id="cameraBox" style="display: none;">
-                <video id="cameraVideo" autoplay muted playsinline></video>
-            </div>
-
-            <!-- 左边：上传视频 -->
-            <div class="video-box" id="uploadBox" style="display: none;">
-                <input type="file" accept="video/*" id="videoUpload" />
-                <video id="uploadedVideo" controls></video>
-            </div>
-
-            <!-- 右边：识别结果 -->
-            <div class="detect-result-box">
-                <h3>识别结果</h3>
-                <ul id="realtimeResult">
-                    <li>等待识别...</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-
-
 
 
 
