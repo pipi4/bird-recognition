@@ -272,10 +272,10 @@ function initSpeechRecognitionModule() {
     elements.startBtn.addEventListener("click", async () => {
         if (!isRecording) {
             await startWebSocket();
-            elements.startBtn.textContent = "⏹️ 停止";
+            elements.startBtn.textContent = "⏹️";
         } else {
             stopRecording();
-            elements.startBtn.textContent = "🎤 录音";
+            elements.startBtn.textContent = "🎤";
         }
         isRecording = !isRecording;
     });
