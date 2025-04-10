@@ -53,12 +53,16 @@
                     📁 选择图片
                     <input type="file" id="imageUpload" accept="image/*" hidden>
                 </label>
+                <label for="videoUpload" class="custom-upload-btn">
+                    🎥 选择视频
+                    <input type="file" id="videoUpload" accept="video/*" hidden>
+                </label>
             </div>
         </div>
 
         <div class="preview-container">
             <div class="image-preview" id="uploadPreview">
-                <div class="placeholder-text">请上传图片进行识别</div>
+                <div class="placeholder-text">请上传图片或视频进行识别</div>
             </div>
             <div class="processing-overlay" id="processing">
                 <div class="loader"></div>

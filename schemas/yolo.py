@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from typing import Set, Optional
+from typing import Set, Optional, List
 
 # Wikipedia信息的Pydantic模型
 class WikipediaInfo(BaseModel):
     title: str
     summary: str
-    image: Optional[str]  # 图片链接，可能为空
+    image: Optional[str] = None
     wiki_url: str  # 维基百科页面的URL
 
 # 图像分析的响应模型
@@ -30,3 +30,8 @@ class ImageAnalysisResponse(BaseModel):
     id: int  # 图像ID
     labels: Set[str]  # 使用Set保证标签的唯一性
     wiki_info: WikipediaInfo  # 包含的维基百科信息
+
+class VideoAnalysisResponse(BaseModel):
+    frame_ids: List[int]
+    labels_per_frame: List[Set[str]]
+    unique_labels: List[str]

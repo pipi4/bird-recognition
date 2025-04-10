@@ -364,11 +364,12 @@ function initImageUploadModule() {
     const lastDetection = JSON.parse(localStorage.getItem("lastDetection"));
     if (lastDetection) {
         displayDetectionResults(lastDetection);
-        displayProcessedImage(lastDetection.id);  // 注意：可能需要判断 id 是否存在
+        displayProcessedImage(lastDetection.id);
     }
 
     const elements = {
         imageUpload: getElementOrThrow("imageUpload"),
+        videoUpload: getElementOrThrow("videoUpload"),
         uploadPreview: getElementOrThrow("uploadPreview"),
         resultContainer: getElementOrThrow("resultContainer"),
         processingOverlay: getElementOrThrow("processing"),
@@ -377,6 +378,7 @@ function initImageUploadModule() {
     };
 
     elements.imageUpload.addEventListener("change", handleImageSelection);
+    elements.videoUpload.addEventListener("change", handleVideoSelection);
 
     async function handleImageSelection(event) {
         const file = event.target.files[0];
@@ -385,7 +387,7 @@ function initImageUploadModule() {
         // 图片格式验证：检查文件类型是否为图片
         if (!file.type.startsWith('image/')) {
             alert('请上传有效的图片文件！');
-            return;  // 终止进一步的处理
+            return;
         }
 
         // 如果是图片，则继续进行上传和处理
@@ -412,6 +414,141 @@ function initImageUploadModule() {
             alert(`图片处理失败: ${error.message}`);
         } finally {
             elements.processingOverlay.style.display = "none";
+        }
+    }
+
+    async function handleVideoSelection(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // 视频格式验证：检查文件类型是否为视频
+        if (!file.type.startsWith('video/')) {
+            alert('请上传有效的视频文件！');
+            return;
+        }
+
+        elements.processingOverlay.style.display = "grid";
+        elements.detectedObjectsList.innerHTML = "";
+
+        try {
+            const objectUrl = URL.createObjectURL(file);
+            const video = document.createElement('video');
+            video.src = objectUrl;
+            video.controls = true;
+            video.style.maxWidth = '100%';
+            elements.uploadPreview.innerHTML = '';
+            elements.uploadPreview.appendChild(video);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // 使用fetch API进行流式请求
+            const response = await fetch('http://127.0.0.1:8000/yolo/upload/video', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            // 创建画布用于显示处理后的帧
+            const canvas = document.createElement('canvas');
+            canvas.style.maxWidth = '100%';
+            elements.resultContainer.innerHTML = '';
+            elements.resultContainer.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+
+            // 存储所有检测到的标签
+            const allLabels = new Set();
+
+            // 处理流式数据
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                // 解码数据
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (!line || !line.startsWith('data:')) continue;
+
+                    try {
+                        const data = JSON.parse(line.slice(5));
+                        
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+
+                        // 更新检测到的标签
+                        data.labels.forEach(label => allLabels.add(label));
+                        elements.detectedObjectsList.innerHTML = Array.from(allLabels)
+                            .map(label => `<li>${label}</li>`)
+                            .join("");
+
+                        // 显示处理后的帧
+                        const frameData = new Uint8Array(data.frame.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                        const blob = new Blob([frameData], { type: 'image/jpeg' });
+                        const img = new Image();
+                        img.onload = () => {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+                        };
+                        img.src = URL.createObjectURL(blob);
+                    } catch (error) {
+                        console.error("处理视频帧失败:", error);
+                        elements.detectedObjectsList.innerHTML = `<li>处理失败: ${error.message}</li>`;
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error("视频处理失败:", error);
+            alert(`视频处理失败: ${error.message}`);
+        } finally {
+            elements.processingOverlay.style.display = "none";
+        }
+    }
+
+    function displayVideoResults(response) {
+        localStorage.setItem("lastDetection", JSON.stringify(response));
+        const detectedObjectsList = getElementOrThrow("detectedObjects");
+        detectedObjectsList.innerHTML = "";
+
+        if (response.unique_labels && response.unique_labels.length > 0) {
+            // 显示所有检测到的标签
+            detectedObjectsList.innerHTML = response.unique_labels
+                .map(label => `<li>${label}</li>`)
+                .join("");
+
+            // 显示视频帧
+            elements.resultContainer.innerHTML = "";
+            const frameContainer = document.createElement('div');
+            frameContainer.className = 'video-frames';
+            frameContainer.style.display = 'grid';
+            frameContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+            frameContainer.style.gap = '10px';
+
+            // 加载前5帧作为预览
+            const previewFrames = response.frame_ids.slice(0, 5);
+            previewFrames.forEach(frameId => {
+                const frameImg = document.createElement('img');
+                frameImg.src = `http://127.0.0.1:8000/yolo/download/video/${frameId}`;
+                frameImg.alt = `Frame ${frameId}`;
+                frameImg.style.width = '100%';
+                frameImg.style.height = 'auto';
+                frameContainer.appendChild(frameImg);
+            });
+
+            elements.resultContainer.appendChild(frameContainer);
+        } else {
+            detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
+            elements.resultContainer.innerHTML = "";
         }
     }
 
