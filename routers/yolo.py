@@ -9,13 +9,10 @@ import os
 from typing import List
 import asyncio
 import json
+from database import save_image, get_image, save_video_frame, get_video_frame
 
 # 创建一个API路由实例，路径前缀为/yolo，标签为"图像上传和识别"
 yolo_router = APIRouter(tags=["图像上传和识别"], prefix="/yolo")
-
-# 内存中存储上传的图像和视频帧
-images = []
-video_frames = []
 
 # region upload
 # 定义图像上传的POST接口，路径为/yolo/upload
@@ -46,15 +43,9 @@ async def yolo_image_upload(file: UploadFile) -> ImageAnalysisResponse:
                 detail="图像处理失败",
             )
 
-        success, encoded_image = cv2.imencode(".png", frame)  # 将图像编码为PNG格式
+        # Save the image to SQLite database
+        image_id = save_image(frame)
 
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="图像编码失败",
-            )
-
-        images.append(encoded_image)  # 将编码后的图像存储在内存中
         # 获取第一个识别的鸟类名称（可以扩展成多个）
         if labels:
             bird_name_with_prefix = list(labels)[0]
@@ -79,7 +70,7 @@ async def yolo_image_upload(file: UploadFile) -> ImageAnalysisResponse:
             )
 
         return ImageAnalysisResponse(
-            id=len(images),
+            id=image_id,
             labels=labels,
             wiki_info=wiki_info
         )
@@ -111,14 +102,12 @@ async def yolo_video_upload(file: UploadFile):
         try:
             detector = yolov8.YoloV8Detector(chunked=contents, is_video=True)  # 创建YOLOv8检测器实例
             async for frame, labels in detector():
-                # 编码帧为JPEG格式
-                success, encoded_frame = cv2.imencode('.jpg', frame)
-                if not success:
-                    continue
+                # Save the frame to SQLite database
+                frame_id = save_video_frame(frame)
 
                 # 创建包含帧和标签的响应
                 response = {
-                    'frame': encoded_frame.tobytes().hex(),
+                    'frame_id': frame_id,
                     'labels': list(labels)
                 }
 
@@ -170,14 +159,21 @@ async def yolo_image_download(image_id: int) -> Response:
     返回:
     Response: 包含图像数据的响应。
     """
-    try:
-        # 返回指定ID的图像
-        return Response(content=images[image_id - 1].tobytes(), media_type="image/png")
-    except IndexError:
+    image = get_image(image_id)
+    if image is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="图像未找到",
         )
+    
+    success, encoded_image = cv2.imencode(".png", image)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="图像编码失败",
+        )
+    
+    return Response(content=encoded_image.tobytes(), media_type="image/png")
 
 # 定义视频帧下载的GET接口，路径为/yolo/download/video/{frame_id}
 @yolo_router.get(
@@ -204,12 +200,19 @@ async def yolo_video_frame_download(frame_id: int) -> Response:
     返回:
     Response: 包含视频帧数据的响应。
     """
-    try:
-        # 返回指定ID的视频帧
-        return Response(content=video_frames[frame_id - 1].tobytes(), media_type="image/png")
-    except IndexError:
+    frame = get_video_frame(frame_id)
+    if frame is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="视频帧未找到",
         )
+    
+    success, encoded_frame = cv2.imencode(".png", frame)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="视频帧编码失败",
+        )
+    
+    return Response(content=encoded_frame.tobytes(), media_type="image/png")
 # endregion
