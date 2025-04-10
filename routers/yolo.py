@@ -9,7 +9,7 @@ import os
 from typing import List
 import asyncio
 import json
-from database import save_image, get_image, save_video_frame, get_video_frame
+from database import save_image, get_image, save_video_frame, get_video_frame, save_detection_history, get_detection_history
 
 # 创建一个API路由实例，路径前缀为/yolo，标签为"图像上传和识别"
 yolo_router = APIRouter(tags=["图像上传和识别"], prefix="/yolo")
@@ -45,6 +45,14 @@ async def yolo_image_upload(file: UploadFile) -> ImageAnalysisResponse:
 
         # Save the image to SQLite database
         image_id = save_image(frame)
+
+        # Save to history
+        save_detection_history(
+            image_id=image_id,
+            detected_objects=list(labels),
+            confidence=0.8,  # You might want to get actual confidence from the detector
+            has_warning=False  # You might want to implement warning logic
+        )
 
         # 获取第一个识别的鸟类名称（可以扩展成多个）
         if labels:
@@ -215,4 +223,24 @@ async def yolo_video_frame_download(frame_id: int) -> Response:
         )
     
     return Response(content=encoded_frame.tobytes(), media_type="image/png")
+# endregion
+
+# region history
+@yolo_router.get(
+    "/history",
+    status_code=status.HTTP_200_OK,
+    responses={200: {"description": "成功获取历史记录"}},
+)
+async def get_history(limit: int = 50):
+    """
+    获取检测历史记录。
+    
+    参数:
+    limit (int): 返回的记录数量限制，默认为50
+    
+    返回:
+    List[dict]: 历史记录列表
+    """
+    history = get_detection_history(limit)
+    return history
 # endregion
