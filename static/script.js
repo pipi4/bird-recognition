@@ -518,3 +518,143 @@ function initBirdFactModule() {
         clearInterval(bgInterval);
     };
 }
+
+function openPopup(id) {
+    document.getElementById(id).style.display = "flex";
+    if (id === "videoPopup") {
+        switchVideoMode('camera'); // 默认进入摄像头模式
+    }
+}
+
+
+function closePopup(id) {
+    document.getElementById(id).style.display = "none";  // 隐藏弹窗
+}
+
+function switchVideoMode(mode) {
+    const cameraBox = document.getElementById("cameraBox");
+    const uploadBox = document.getElementById("uploadBox");
+    const cameraBtn = document.getElementById("cameraModeBtn");
+    const uploadBtn = document.getElementById("uploadModeBtn");
+
+    // 停掉前一个视频
+    stopAllVideo();
+
+    if (mode === 'camera') {
+        cameraBox.style.display = "block";
+        uploadBox.style.display = "none";
+        cameraBtn.classList.add("active");
+        uploadBtn.classList.remove("active");
+
+        // 开启摄像头
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                const video = document.getElementById("cameraVideo");
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                alert("无法访问摄像头：" + err.message);
+            });
+
+    } else if (mode === 'upload') {
+        cameraBox.style.display = "none";
+        uploadBox.style.display = "block";
+        cameraBtn.classList.remove("active");
+        uploadBtn.classList.add("active");
+    }
+}
+
+function stopAllVideo() {
+    // 停止摄像头
+    const cameraVideo = document.getElementById("cameraVideo");
+    if (cameraVideo.srcObject) {
+        cameraVideo.srcObject.getTracks().forEach(track => track.stop());
+        cameraVideo.srcObject = null;
+    }
+
+    // 停止上传的视频
+    const uploadedVideo = document.getElementById("uploadedVideo");
+    uploadedVideo.pause();
+    uploadedVideo.removeAttribute("src");
+    uploadedVideo.load();
+}
+
+// 上传视频播放逻辑
+document.getElementById("videoUpload").addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+        const url = URL.createObjectURL(file);
+        const video = document.getElementById("uploadedVideo");
+        video.src = url;
+        video.play();
+    }
+});
+
+//历史记录
+function renderHistoryData(dataArray) {
+    const tbody = document.getElementById("historyTableBody");
+    tbody.innerHTML = ""; // 清空旧数据
+
+    dataArray.forEach(item => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${item.time}</td>
+            <td>${item.target}</td>
+            <td>${item.result}</td>
+            <td>${item.confidence}</td>
+            <td>${item.warning ? '是' : '否'}</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+//数据看板
+function updateDashboard(data) {
+    document.getElementById("totalCount").textContent = data.total || 0;
+    document.getElementById("todayCount").textContent = data.today || 0;
+    document.getElementById("warningCount").textContent = data.warnings || 0;
+    document.getElementById("todayWarningCount").textContent = data.todayWarnings || 0;
+    document.getElementById("qaCount").textContent = data.qa || 0;
+
+    // 你可以用图表库（如 ECharts）来渲染 chart-placeholder
+    renderChart(data.chartData || []);
+}
+
+//异常预警
+function updateAlerts(alerts) {
+    const list = document.getElementById("alertList");
+    list.innerHTML = ""; // 清空旧内容
+
+    if (alerts.length === 0) {
+        list.innerHTML = "<p>暂无异常预警信息。</p>";
+        return;
+    }
+
+    alerts.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "alert-card";
+
+        card.innerHTML = `
+            <img src="${item.image}" alt="预警图像" width="100">
+            <div>
+                <p>时间：${item.time}</p>
+                <p>类型：${item.type}</p>
+                <p>等级：${item.level}</p>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+//监听阈值变化（实时传给后端）
+document.getElementById("thresholdInput").addEventListener("change", function () {
+    const threshold = parseFloat(this.value);
+    if (!isNaN(threshold)) {
+        // 可发送到后端 API
+        console.log("设置新的阈值：", threshold);
+        // fetch('/api/set-threshold', { method: 'POST', body: JSON.stringify({ threshold }) });
+    }
+});
+

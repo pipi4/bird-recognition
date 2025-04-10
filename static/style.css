@@ -1,6 +1,6 @@
 :root {
-    --primary: #2563eb;
-    --secondary: #7c3aed;
+    --primary: #1f51c3;
+    --secondary: #431c83;
     --background: #f8fafc;
     --text: #1e293b;
     --card-bg: rgba(255, 255, 255, 0.95);
@@ -9,8 +9,8 @@
 
 /* 设置暗模式下背景色、字体颜色等 */
 [data-theme="dark"] {
-    --primary: #818cf8;
-    --secondary: #c4b5fd;
+    --primary: #4f549a;
+    --secondary: #8d7eb3;
     --background: rgba(30, 30, 30, 0.94);  /* 页面背景 */
     --text: #e2e8f0;  /* 字体颜色 */
     --card-bg: rgba(30, 30, 30, 0.95);  /* 卡片背景 */
@@ -690,3 +690,258 @@ body > * {
     position: relative;
     z-index: 1;
 }
+
+/* 异常预警 */
+ .wiki-card {
+            background: var(--card-bg, #fff);
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-top: 1em;
+        }
+.wiki-card img {
+            max-width: 100%;
+            margin: 0.5em 0;
+            border-radius: 8px;
+        }
+.wiki-card h3 {
+            margin-top: 0;
+        }
+
+/* 弹窗样式 */
+.popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+.popup-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+.alert-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+.history-table {
+   max-width: 1000px;
+    margin-top: 1em;
+    overflow-x: auto;
+    max-height: 400px;
+}
+
+.history-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.history-table th,
+.history-table td {
+    border: 1px solid #ddd;
+    padding: 0.5em 1em;
+    text-align: center;
+}
+
+.history-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* 弹窗遮罩层样式 */
+.popup-overlay {
+    position: fixed;    /* 让它覆盖全屏 */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;      /* 默认隐藏 */
+    justify-content: center; /* 横向居中 */
+    align-items: center;     /* 纵向居中 */
+    background-color: rgba(0, 0, 0, 0.5); /* 背景半透明遮罩 */
+    z-index: 1000;       /* 确保弹窗在最上层 */
+}
+
+/* 弹窗内容框样式 */
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;          /* 弹窗宽度 */
+    max-width: 500px;    /* 最大宽度 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;  /* 让关闭按钮定位 */
+}
+
+/* 关闭按钮样式 */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+}
+
+/* 数据看板 弹窗样式 */
+.dashboard-stats {
+    margin: 1em 0;
+}
+
+.dashboard-stats p {
+    font-size: 1rem;
+    margin: 0.5em 0;
+}
+
+.chart-container {
+    margin-top: 1em;
+}
+
+/* 预警趋势图表的占位符 */
+#chart-placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+/* 视频检测弹窗布局 */
+.video-detect-popup {
+    width: 90%;
+    max-width: 1000px;
+}
+
+.video-detect-grid {
+    display: flex;
+    gap: 1.5em;
+    margin-top: 1em;
+}
+
+.video-box video {
+    width: 480px;
+    height: 360px;
+    border-radius: 10px;
+    background-color: #000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.detect-result-box {
+    flex: 1;
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 1em;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.detect-result-box h3 {
+    margin-top: 0;
+}
+
+.detect-result-box ul {
+    list-style: none;
+    padding: 0;
+}
+
+.detect-result-box li {
+    padding: 0.5em 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.video-mode-switch {
+    display: flex;
+    gap: 1em;
+    margin-bottom: 1em;
+}
+
+.video-mode-switch button {
+    padding: 0.5em 1em;
+    border: none;
+    background-color: #eee;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.video-mode-switch button.active {
+    background-color: #333;
+    color: white;
+}
+
+.video-detect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+    align-items: start;
+}
+
+.video-box {
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.video-box video {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 12px;
+    margin-top: 1em;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.video-box input[type="file"] {
+    font-size: 1rem;
+    padding: 0.5em;
+    background-color: #ffffff;
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.video-box input[type="file"]:hover {
+    border-color: #333;
+}
+
+.detect-result-box {
+    background-color: #ffffff;
+    padding: 1em;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.detect-result-box ul {
+    list-style: none;
+    padding-left: 1em;
+}
+
+.detect-result-box li {
+    padding: 0.4em 0;
+    border-bottom: 1px solid #eee;
+}
+
+

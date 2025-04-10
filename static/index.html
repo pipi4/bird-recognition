@@ -15,28 +15,9 @@
     <script src="/static/tts.js"></script>
     <script src="/static/script.js"></script> <!-- 最后引入你的主逻辑 -->
 
-    <style>
-        /* 简单内联样式以增强 wiki 显示区布局 */
-        .wiki-card {
-            background: var(--card-bg, #fff);
-            padding: 1em;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            margin-top: 1em;
-        }
-        .wiki-card img {
-            max-width: 100%;
-            margin: 0.5em 0;
-            border-radius: 8px;
-        }
-        .wiki-card h3 {
-            margin-top: 0;
-        }
-    </style>
+
 </head>
-<!-- Markdown 渲染 -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<!-- 安全防护（可选，但建议） -->
 <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
 <body>
@@ -45,9 +26,17 @@
         <h1 aria-label="智能识别">🔍 BirdFinder</h1>
 
         <nav class="nav-container">
+
             <ul class="nav-links">
+
                 <li><a href="/static/index.html">首页</a></li>
                 <li><a href="/static/about.html">关于我们</a></li>
+                <li><a  onclick="openPopup('historyPopup')" class="nav-btn">历史记录</a></li>
+                <li><a onclick="openPopup('alertsPopup')" class="nav-btn">异常预警</a></li>
+                <li><a onclick="openPopup('dashboardPopup')" class="nav-btn">数据看板</a></li>
+                <li><a onclick="openPopup('videoPopup')" class="nav-btn">视频检测</a></li>
+
+
             </ul>
             <button id="themeToggle" class="theme-toggle" aria-label="切换主题">🌓</button>
         </nav>
@@ -77,7 +66,7 @@
             </div>
         </div>
     </section>
-    <!-- 识别结果模块 -->
+
     <section class="card result-section" aria-labelledby="resultHeading">
         <h2 id="resultHeading"><span class="icon">🔍</span> 检测结果</h2>
         <div class="result-grid">
@@ -96,7 +85,6 @@
         </div>
     </section>
 
-    <!-- Wikipedia 介绍（直接显示） -->
     <section class="card wiki-section" aria-labelledby="wikiInfoHeading">
         <h2 id="wikiInfoHeading"><span class="icon">📖</span> 鸟类介绍</h2>
         <div id="wikiInfoContainer">
@@ -104,7 +92,6 @@
         </div>
     </section>
 
-    <!-- AI对话模块 -->
     <section class="card chat-section" aria-labelledby="chatHeading">
         <h2 id="chatHeading"><span class="icon">💬</span> 智能助手</h2>
         <div class="chat-interface">
@@ -123,16 +110,115 @@
     </section>
 </main>
 
-<script src="/static/script.js"></script>
+<!-- 历史检测记录 弹窗 -->
+<div id="historyPopup" class="popup-overlay">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closePopup('historyPopup')">&times;</span>
+        <h2>📜 历史检测记录</h2>
+        <div class="history-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>检测对象</th>
+                        <th>结果</th>
+                        <th>置信度</th>
+                        <th>预警</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <!-- 后端数据将注入这里 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- 异常预警弹窗 -->
+<div id="alertsPopup" class="popup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closePopup('alertsPopup')">&times;</span>
+        <h2>异常预警设置</h2>
+
+        <label for="thresholdInput">预警阈值设置：</label>
+        <input type="number" id="thresholdInput" placeholder="例如：10">
+
+        <h3>当前预警信息</h3>
+        <div class="alert-list" id="alertList">
+            <!-- 动态插入 alert-card 项 -->
+        </div>
+    </div>
+</div>
+
+<!-- 数据看板 弹窗 -->
+<div id="dashboardPopup" class="popup-overlay">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closePopup('dashboardPopup')">&times;</span>
+        <h2>📊 数据看板</h2>
+        <div class="dashboard-stats">
+            <p><strong>总检测数：</strong> <span id="totalCount">--</span></p>
+            <p><strong>当日检测数：</strong> <span id="todayCount">--</span></p>
+            <p><strong>预警数：</strong> <span id="warningCount">--</span></p>
+            <p><strong>当日预警数：</strong> <span id="todayWarningCount">--</span></p>
+            <p><strong>AI问答情况：</strong> <span id="qaCount">--</span></p>
+        </div>
+        <div class="chart-container">
+            <p>预警趋势图：</p>
+            <div id="chart-placeholder" style="width: 100%; height: 300px; background: #f0f0f0; border-radius: 8px;"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 视频检测弹窗 -->
+<div id="videoPopup" class="popup-overlay">
+    <div class="popup-content video-detect-popup">
+        <span class="close-btn" onclick="closePopup('videoPopup')">&times;</span>
+        <h2>🎥 视频检测</h2>
+
+        <!-- 切换方式 -->
+        <div class="video-mode-switch">
+            <button onclick="switchVideoMode('camera')" id="cameraModeBtn">📷 摄像头检测</button>
+            <button onclick="switchVideoMode('upload')" id="uploadModeBtn">📁 上传视频</button>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="video-detect-grid">
+            <!-- 左边：摄像头 -->
+            <div class="video-box" id="cameraBox" style="display: none;">
+                <video id="cameraVideo" autoplay muted playsinline></video>
+            </div>
+
+            <!-- 左边：上传视频 -->
+            <div class="video-box" id="uploadBox" style="display: none;">
+                <input type="file" accept="video/*" id="videoUpload" />
+                <video id="uploadedVideo" controls></video>
+            </div>
+
+            <!-- 右边：识别结果 -->
+            <div class="detect-result-box">
+                <h3>识别结果</h3>
+                <ul id="realtimeResult">
+                    <li>等待识别...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
 
 <footer class="fact-container">
     <p id="factBox">正在加载趣闻...</p>
 </footer>
 
-<!-- 引入 CryptoJS 用于生成加密签名 -->
 <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-<!-- 这里是初始化科大讯飞的语音识别功能 -->
 <script src="/static/iat/iat-recorder.js" type="module"></script>
 
 <script type="module">
@@ -142,7 +228,7 @@
     const recordBtn = document.getElementById("recordBtn");
     const outputDom = document.getElementById("chatBox");
 
-    const ws_url = "ws://localhost:8000/ws/speech"; // 后端部署地址
+    const ws_url = "ws://localhost:8000/ws/speech";
 
     const appendText = (text) => {
         const p = document.createElement("p");
@@ -177,7 +263,7 @@
         };
 
         mediaRecorder = new MediaRecorder(stream, {
-            mimeType: "audio/webm" // We'll convert it later if needed
+            mimeType: "audio/webm"
         });
 
         mediaRecorder.ondataavailable = async (e) => {
@@ -187,7 +273,7 @@
             }
         };
 
-        mediaRecorder.start(250); // 每 250ms 切片发一次（越短越实时）
+        mediaRecorder.start(250);
     };
 
     const stopRecording = () => {
@@ -208,8 +294,7 @@
         }
         isRecording = !isRecording;
     };
+
 </script>
-
-
 </body>
 </html>
