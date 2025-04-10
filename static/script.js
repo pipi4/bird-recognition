@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
             initChatModule();
             initImageUploadModule();
             initBirdFactModule();
+            initSpeechRecognitionModule();  // 初始化语音识别模块
         }
 
         // 通用初始化（所有页面都需要）
@@ -36,7 +37,6 @@ function initTheme() {
         });
     }
 }
-
 
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -95,15 +95,14 @@ function initChatModule() {
     };
 
     // 恢复历史聊天记录
-const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-for (const { sender, text } of history) {
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message ${sender}-message`;
-    messageDiv.textContent = sanitizeInput(text);
-    elements.chatBox.appendChild(messageDiv);
-}
-elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
-
+    const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    for (const { sender, text } of history) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = sanitizeInput(text);
+        elements.chatBox.appendChild(messageDiv);
+    }
+    elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
 
     elements.sendButton.addEventListener("click", handleSendMessage);
     elements.inputField.addEventListener("keydown", (e) => {
@@ -113,85 +112,250 @@ elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
         }
     });
 
+    let accumulatedText = '';  // 用来积累文本
+
     async function handleSendMessage() {
-    const question = elements.inputField.value.trim();
-    if (!question) return;
+        const question = elements.inputField.value.trim();
+        if (!question) return;
 
-    addMessage(question, "user");
-    elements.inputField.value = "";
+        addMessage(question, "user");
+        elements.inputField.value = "";
 
-    const sendIcon = document.getElementById("sendIcon");
-    if (sendIcon) {
-        sendIcon.innerHTML = '⏳';
-        sendIcon.classList.add('thinking-icon');
-    }
+        const sendIcon = document.getElementById("sendIcon");
+        if (sendIcon) {
+            sendIcon.innerHTML = '⏳';
+            sendIcon.classList.add('thinking-icon');
+        }
 
-    // 添加机器人“思考中”的占位消息，返回的是该 DOM 元素
-    const loadingMsg = addMessage("🤖 正在思考中...", "bot");
+        const loadingMsg = addMessage("🤖 正在思考中...", "bot");
 
-    try {
-        const response = await safeFetchChat("http://127.0.0.1:8000/deepseek/ask", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ question })
-        });
+        try {
+            const response = await safeFetchChat("http://127.0.0.1:8000/deepseek/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question })
+            });
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        let text = '';
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let text = '';
+            let lastText = '';
 
-        while (!done) {
-            const { value, done: doneReading } = await reader.read();
-            done = doneReading;
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
 
-            if (value) {
-                text += decoder.decode(value, { stream: true });
+                if (value) {
+                    text += decoder.decode(value, { stream: true });
 
-                // 使用 marked 渲染 Markdown + DOMPurify 防注入
-                const rendered = DOMPurify.sanitize(marked.parse(text));
-                loadingMsg.innerHTML = rendered;
+                    const rendered = DOMPurify.sanitize(marked.parse(text));
+                    loadingMsg.innerHTML = rendered;
 
-                elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+                    const newText = text.slice(lastText.length);
+
+                    if (newText) {
+                        // 将新文本与之前积累的文本合并
+                        accumulatedText += newText;
+
+                        // 每过一段时间（比如 1 秒），就把积累的文本播放
+                        clearTimeout(window.textTimeout);
+                        window.textTimeout = setTimeout(() => {
+                            queueSpeech(accumulatedText);
+                            accumulatedText = '';  // 播放完后清空积累的文本
+                        }, 1000);  // 延迟 1 秒钟进行播放
+                        lastText = text;
+                    }
+
+                    elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+                }
+            }
+        } catch (error) {
+            loadingMsg.textContent = `错误: ${error.message}`;
+            console.error("消息发送失败:", error);
+        } finally {
+            if (sendIcon) {
+                sendIcon.innerHTML = '🚀';
+                sendIcon.classList.remove('thinking-icon');
             }
         }
+    }
 
-    } catch (error) {
-        loadingMsg.textContent = `错误: ${error.message}`;
-        console.error("消息发送失败:", error);
-    } finally {
-        if (sendIcon) {
-            sendIcon.innerHTML = '🚀';
-            sendIcon.classList.remove('thinking-icon');
+    // 添加语音播报队列
+    const speechQueue = [];
+    let isSpeaking = false;
+
+    function queueSpeech(text) {
+        speechQueue.push(text);
+        if (!isSpeaking) {
+            playNextSpeech();
         }
     }
+
+    function playNextSpeech() {
+        if (speechQueue.length === 0) {
+            isSpeaking = false;
+            return;
+        }
+
+        isSpeaking = true;
+        const nextText = speechQueue.shift();
+
+        const utterance = new SpeechSynthesisUtterance(nextText);
+        utterance.lang = 'zh-CN';
+        utterance.rate = 1.2;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        utterance.onend = () => {
+            playNextSpeech(); // 播完继续下一个
+        };
+
+        speechSynthesis.speak(utterance);
+    }
+
+    function speakText(text) {
+        if (window.audioPlayer && typeof audioPlayer.postMessage === 'function') {
+            // 使用讯飞流式播报
+            // 假设你已经有了 audioPlayer 实例，并处理 base64 音频
+            // 你可以在这里请求后端获取合成结果，然后播放
+        } else {
+            // 使用浏览器内置语音作为备选
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'zh-CN';
+            speech.rate = 1.2;
+            speech.pitch = 1;
+            speech.volume = 1;
+            window.speechSynthesis.speak(speech);
+        }
+    }
+
+    function sanitizeInput(text) {
+    return text.toString().replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 
     function addMessage(text, sender) {
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message ${sender}-message`;
-    messageDiv.textContent = sanitizeInput(text);
-    elements.chatBox.appendChild(messageDiv);
-    elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = sanitizeInput(text);
+        elements.chatBox.appendChild(messageDiv);
+        elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
 
-    // 保存到 localStorage
-    const stored = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    stored.push({ sender, text });
-    localStorage.setItem("chatHistory", JSON.stringify(stored));
+        // 保存到 localStorage
+        const stored = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+        stored.push({ sender, text });
+        localStorage.setItem("chatHistory", JSON.stringify(stored));
 
-    return messageDiv;
+        // ✅ 如果是 AI 助手的回复，就朗读
+        if (sender === "bot" && text.trim()) {
+            speakText(text);
+        }
+
+        return messageDiv;
+    }
+}
+function initSpeechRecognitionModule() {
+    const elements = {
+        startBtn: document.getElementById("recordBtn"),
+        resultBox: document.getElementById("question")
+    };
+
+    const wsUrl = "ws://127.0.0.1:8000/ws/speech";
+    let websocket = null;
+    let audioContext = null;
+    let processor = null;
+    let micStream = null;
+
+    let isRecording = false;
+
+    elements.startBtn.addEventListener("click", async () => {
+        if (!isRecording) {
+            await startWebSocket();
+            elements.startBtn.textContent = "⏹️ 停止";
+        } else {
+            stopRecording();
+            elements.startBtn.textContent = "🎤 录音";
+        }
+        isRecording = !isRecording;
+    });
+
+    async function startWebSocket() {
+        websocket = new WebSocket(wsUrl);
+
+        websocket.binaryType = "arraybuffer";
+
+        websocket.onopen = async () => {
+            console.log("WebSocket 已连接");
+            await startRecording();
+        };
+
+        websocket.onmessage = (event) => {
+            console.log("识别结果：", event.data);
+            elements.resultBox.value = event.data;
+        };
+
+        websocket.onerror = (err) => {
+            console.error("WebSocket 错误:", err);
+        };
+
+        websocket.onclose = () => {
+            console.log("WebSocket 已关闭");
+        };
+    }
+
+    async function startRecording() {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: 16000  // 设置采样率为 16000Hz，符合讯飞要求
+        });
+
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const source = audioContext.createMediaStreamSource(micStream);
+
+        processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+        processor.onaudioprocess = function (e) {
+            const input = e.inputBuffer.getChannelData(0);
+            const pcm = floatTo16BitPCM(input);
+            if (websocket.readyState === WebSocket.OPEN) {
+                websocket.send(pcm);
+            }
+        };
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+    }
+
+    function stopRecording() {
+        if (processor) processor.disconnect();
+        if (audioContext) audioContext.close();
+        if (micStream) {
+            micStream.getTracks().forEach(track => track.stop());
+        }
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+            websocket.close();
+        }
+    }
+
+    // 把 Float32 ([-1.0, 1.0]) 转为 Int16 PCM
+    function floatTo16BitPCM(input) {
+        const output = new DataView(new ArrayBuffer(input.length * 2));
+        for (let i = 0; i < input.length; i++) {
+            let s = Math.max(-1, Math.min(1, input[i]));
+            output.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+        return output.buffer;
+    }
 }
 
-}
 
 // 初始化图片上传模块
 function initImageUploadModule() {
     const lastDetection = JSON.parse(localStorage.getItem("lastDetection"));
-if (lastDetection) {
-    displayDetectionResults(lastDetection);
-    displayProcessedImage(lastDetection.id);  // 注意：可能需要判断 id 是否存在
-}
+    if (lastDetection) {
+        displayDetectionResults(lastDetection);
+        displayProcessedImage(lastDetection.id);  // 注意：可能需要判断 id 是否存在
+    }
 
     const elements = {
         imageUpload: getElementOrThrow("imageUpload"),
@@ -205,41 +369,41 @@ if (lastDetection) {
     elements.imageUpload.addEventListener("change", handleImageSelection);
 
     async function handleImageSelection(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+        const file = event.target.files[0];
+        if (!file) return;
 
-    // 图片格式验证：检查文件类型是否为图片
-    if (!file.type.startsWith('image/')) {
-        alert('请上传有效的图片文件！');
-        return;  // 终止进一步的处理
+        // 图片格式验证：检查文件类型是否为图片
+        if (!file.type.startsWith('image/')) {
+            alert('请上传有效的图片文件！');
+            return;  // 终止进一步的处理
+        }
+
+        // 如果是图片，则继续进行上传和处理
+        elements.processingOverlay.style.display = "grid";
+        elements.detectedObjectsList.innerHTML = "";
+
+        try {
+            const objectUrl = URL.createObjectURL(file);
+            elements.uploadPreview.style.backgroundImage = `url(${objectUrl})`;
+            elements.uploadPreview.onload = () => URL.revokeObjectURL(objectUrl);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await safeFetchImageDetection("http://127.0.0.1:8000/yolo/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            displayDetectionResults(response);
+            await displayProcessedImage(response.id);
+        } catch (error) {
+            console.error("图片处理失败:", error);
+            alert(`图片处理失败: ${error.message}`);
+        } finally {
+            elements.processingOverlay.style.display = "none";
+        }
     }
-
-    // 如果是图片，则继续进行上传和处理
-    elements.processingOverlay.style.display = "grid";
-    elements.detectedObjectsList.innerHTML = "";
-
-    try {
-        const objectUrl = URL.createObjectURL(file);
-        elements.uploadPreview.style.backgroundImage = `url(${objectUrl})`;
-        elements.uploadPreview.onload = () => URL.revokeObjectURL(objectUrl);
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await safeFetchImageDetection("http://127.0.0.1:8000/yolo/upload", {
-            method: "POST",
-            body: formData
-        });
-
-        displayDetectionResults(response);
-        await displayProcessedImage(response.id);
-    } catch (error) {
-        console.error("图片处理失败:", error);
-        alert(`图片处理失败: ${error.message}`);
-    } finally {
-        elements.processingOverlay.style.display = "none";
-    }
-}
 
     function displayDetectionResults(response) {
         localStorage.setItem("lastDetection", JSON.stringify(response));
@@ -253,12 +417,11 @@ if (lastDetection) {
 
             if (response.wiki_info) {
                 const wikiInfo = response.wiki_info;
-                elements.wikiInfoContainer.innerHTML = `
-                    <h3>关于 ${wikiInfo.title || '鸟类'}</h3>
+                elements.wikiInfoContainer.innerHTML =
+                    `<h3>关于 ${wikiInfo.title || '鸟类'}</h3>
                     <p>${wikiInfo.summary || "暂无介绍"}</p>
                     ${wikiInfo.image ? `<img src="${wikiInfo.image}" alt="鸟类图片" style="max-width:200px;">` : ""}
-                    <p><a href="${wikiInfo.wiki_url}" target="_blank">查看更多</a></p>
-                `;
+                    <p><a href="${wikiInfo.wiki_url}" target="_blank">查看更多</a></p>`;
             } else {
                 elements.wikiInfoContainer.innerHTML = "<p>未找到相关 Wikipedia 介绍。</p>";
             }
@@ -355,17 +518,3 @@ function initBirdFactModule() {
         clearInterval(bgInterval);
     };
 }
-
-function sanitizeInput(text) {
-    return text.toString().replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-// main.js 的最后几行
-
-initImageUploadModule();
-initChatModule();
-
-// 可选：页面关闭时清理本地记录
-window.addEventListener("beforeunload", () => {
-    localStorage.removeItem("chatHistory");
-    localStorage.removeItem("lastDetection");
-});

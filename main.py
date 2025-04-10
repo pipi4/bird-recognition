@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import routers.deepseek
 import routers.web
+import routers.speech  # 导入语音识别的路由模块
 import routers.yolo
 from uvicorn import Server, Config
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,7 @@ import os
 app = FastAPI()
 
 # 注册路由
+app.include_router(routers.speech.speech_router)  # 注册语音识别路由
 app.include_router(routers.yolo.yolo_router)  # 注册YOLO路由
 app.include_router(routers.deepseek.deepseek_router)  # 注册DeepSeek路由
 app.include_router(routers.web.web_router)  # 注册Web路由

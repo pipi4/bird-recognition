@@ -6,6 +6,15 @@
     <meta name="description" content="AI驱动的物体识别与知识查询平台">
     <title>BirdFinder - 智能物体识别助手</title>
     <link rel="stylesheet" href="/static/style.css">
+
+    <!-- 在 HTML 中引入 SDK -->
+    <script src="/static/js/index.umd.js"></script>
+    <!-- 讯飞语音合成依赖 -->
+    <script src="/static/js/crypto-js.js"></script>
+    <script src="/static/js/base64.js"></script>
+    <script src="/static/tts.js"></script>
+    <script src="/static/script.js"></script> <!-- 最后引入你的主逻辑 -->
+
     <style>
         /* 简单内联样式以增强 wiki 显示区布局 */
         .wiki-card {
@@ -87,7 +96,7 @@
         </div>
     </section>
 
-<!-- Wikipedia 介绍（直接显示） -->
+    <!-- Wikipedia 介绍（直接显示） -->
     <section class="card wiki-section" aria-labelledby="wikiInfoHeading">
         <h2 id="wikiInfoHeading"><span class="icon">📖</span> 鸟类介绍</h2>
         <div id="wikiInfoContainer">
@@ -108,6 +117,7 @@
                 <button id="sendBtn" class="send-btn">
                     <span id="sendIcon" class="send-icon">🚀</span>
                 </button>
+                <button id="recordBtn" class="record-btn">🎤</button>
             </div>
         </div>
     </section>
@@ -118,6 +128,88 @@
 <footer class="fact-container">
     <p id="factBox">正在加载趣闻...</p>
 </footer>
+
+<!-- 引入 CryptoJS 用于生成加密签名 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<!-- 这里是初始化科大讯飞的语音识别功能 -->
+<script src="/static/iat/iat-recorder.js" type="module"></script>
+
+<script type="module">
+    let socket = null;
+    let mediaRecorder = null;
+
+    const recordBtn = document.getElementById("recordBtn");
+    const outputDom = document.getElementById("chatBox");
+
+    const ws_url = "ws://localhost:8000/ws/speech"; // 后端部署地址
+
+    const appendText = (text) => {
+        const p = document.createElement("p");
+        p.textContent = "🗣 " + text;
+        outputDom.appendChild(p);
+        outputDom.scrollTop = outputDom.scrollHeight;
+    };
+
+    const startRecording = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                channelCount: 1,
+                sampleRate: 16000
+            }
+        });
+
+        socket = new WebSocket(ws_url);
+
+        socket.onopen = () => {
+            console.log("WebSocket connected");
+            appendText("🎙️ 开始录音并识别...");
+        };
+
+        socket.onmessage = (event) => {
+            if (event.data) {
+                appendText(event.data);
+            }
+        };
+
+        socket.onclose = () => {
+            console.log("WebSocket closed");
+        };
+
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: "audio/webm" // We'll convert it later if needed
+        });
+
+        mediaRecorder.ondataavailable = async (e) => {
+            if (e.data.size > 0 && socket.readyState === WebSocket.OPEN) {
+                const arrayBuffer = await e.data.arrayBuffer();
+                socket.send(arrayBuffer);
+            }
+        };
+
+        mediaRecorder.start(250); // 每 250ms 切片发一次（越短越实时）
+    };
+
+    const stopRecording = () => {
+        mediaRecorder.stop();
+        socket.close();
+        appendText("🛑 识别结束");
+    };
+
+    let isRecording = false;
+
+    recordBtn.onclick = () => {
+        if (!isRecording) {
+            startRecording();
+            recordBtn.textContent = "⏹️";
+        } else {
+            stopRecording();
+            recordBtn.textContent = "🎤";
+        }
+        isRecording = !isRecording;
+    };
+</script>
+
 
 </body>
 </html>
