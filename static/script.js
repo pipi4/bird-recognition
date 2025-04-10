@@ -462,9 +462,6 @@ function initImageUploadModule() {
             elements.resultContainer.appendChild(canvas);
             const ctx = canvas.getContext('2d');
 
-            // 存储所有检测到的标签
-            const allLabels = new Set();
-
             // 处理流式数据
             while (true) {
                 const { done, value } = await reader.read();
@@ -484,11 +481,14 @@ function initImageUploadModule() {
                             throw new Error(data.error);
                         }
 
-                        // 更新检测到的标签
-                        data.labels.forEach(label => allLabels.add(label));
-                        elements.detectedObjectsList.innerHTML = Array.from(allLabels)
-                            .map(label => `<li>${label}</li>`)
-                            .join("");
+                        // 更新检测到的标签 - 只显示最新的检测结果
+                        if (data.labels && data.labels.length > 0) {
+                            elements.detectedObjectsList.innerHTML = data.labels
+                                .map(label => `<li>${label}</li>`)
+                                .join("");
+                        } else {
+                            elements.detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
+                        }
 
                         // 显示处理后的帧
                         const frameData = new Uint8Array(data.frame.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
