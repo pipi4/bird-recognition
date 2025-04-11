@@ -390,12 +390,14 @@ function initImageUploadModule() {
             return;
         }
 
-        // 如果是图片，则继续进行上传和处理
+        // 清除之前的结果
+        elements.resultContainer.innerHTML = '';
+        elements.detectedObjectsList.innerHTML = '';
         elements.processingOverlay.style.display = "grid";
-        elements.detectedObjectsList.innerHTML = "";
 
         try {
             const objectUrl = URL.createObjectURL(file);
+            elements.uploadPreview.innerHTML = '';
             elements.uploadPreview.style.backgroundImage = `url(${objectUrl})`;
             elements.uploadPreview.onload = () => URL.revokeObjectURL(objectUrl);
 
@@ -427,8 +429,12 @@ function initImageUploadModule() {
             return;
         }
 
+        // 清除之前的结果
+        elements.resultContainer.innerHTML = '';
+        elements.detectedObjectsList.innerHTML = '';
+        elements.uploadPreview.style.backgroundImage = 'none';
+
         elements.processingOverlay.style.display = "grid";
-        elements.detectedObjectsList.innerHTML = "";
 
         try {
             const objectUrl = URL.createObjectURL(file);
@@ -436,6 +442,8 @@ function initImageUploadModule() {
             video.src = objectUrl;
             video.controls = true;
             video.style.maxWidth = '100%';
+            video.style.maxHeight = '300px'; // 限制视频预览高度
+            video.style.objectFit = 'contain';
             elements.uploadPreview.innerHTML = '';
             elements.uploadPreview.appendChild(video);
 
@@ -455,15 +463,35 @@ function initImageUploadModule() {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
 
-            // 创建画布用于显示处理后的帧
-            const canvas = document.createElement('canvas');
-            canvas.style.maxWidth = '100%';
-            elements.resultContainer.innerHTML = '';
+            // 创建结果显示区域的布局容器
+            const resultDiv = document.createElement('div');
+            resultDiv.style.width = '100%';
+            resultDiv.style.display = 'flex';
+            resultDiv.style.flexDirection = 'column';
+            resultDiv.style.gap = '20px';
+            resultDiv.style.marginTop = '20px';
+            elements.resultContainer.appendChild(resultDiv);
+
+            // 创建帧显示容器
+            const frameContainer = document.createElement('div');
+            frameContainer.style.width = '100%';
+            frameContainer.style.maxHeight = '300px'; // 限制结果显示区域高度
+            frameContainer.style.overflow = 'hidden';
+            frameContainer.style.display = 'flex';
+            frameContainer.style.justifyContent = 'center';
+            frameContainer.style.alignItems = 'center';
+            frameContainer.style.backgroundColor = '#f8f8f8';
+            frameContainer.style.borderRadius = '8px';
+            frameContainer.style.padding = '10px';
+            resultDiv.appendChild(frameContainer);
             
-            // Create a single image element for frame updates
+            // 创建帧图像元素
             const frameImg = document.createElement('img');
             frameImg.style.maxWidth = '100%';
-            elements.resultContainer.appendChild(frameImg);
+            frameImg.style.maxHeight = '280px'; // 留出一些padding空间
+            frameImg.style.objectFit = 'contain';
+            frameImg.style.borderRadius = '4px';
+            frameContainer.appendChild(frameImg);
 
             // 处理流式数据
             while (true) {
