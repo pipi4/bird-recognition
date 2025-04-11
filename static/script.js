@@ -361,12 +361,6 @@ function initSpeechRecognitionModule() {
 
 // 初始化图片上传模块
 function initImageUploadModule() {
-    const lastDetection = JSON.parse(localStorage.getItem("lastDetection"));
-    if (lastDetection) {
-        displayDetectionResults(lastDetection);
-        displayProcessedImage(lastDetection.id);
-    }
-
     const elements = {
         imageUpload: getElementOrThrow("imageUpload"),
         videoUpload: getElementOrThrow("videoUpload"),
@@ -376,6 +370,12 @@ function initImageUploadModule() {
         detectedObjectsList: getElementOrThrow("detectedObjects"),
         wikiInfoContainer: getElementOrThrow("wikiInfoContainer")
     };
+
+    const lastDetection = JSON.parse(localStorage.getItem("lastDetection"));
+    if (lastDetection) {
+        displayDetectionResults(lastDetection, elements);
+        displayProcessedImage(lastDetection.id, elements);
+    }
 
     elements.imageUpload.addEventListener("change", handleImageSelection);
     elements.videoUpload.addEventListener("change", handleVideoSelection);
@@ -407,8 +407,8 @@ function initImageUploadModule() {
                 body: formData
             });
 
-            displayDetectionResults(response);
-            await displayProcessedImage(response.id);
+            displayDetectionResults(response, elements);
+            await displayProcessedImage(response.id, elements);
         } catch (error) {
             console.error("图片处理失败:", error);
             alert(`图片处理失败: ${error.message}`);
@@ -549,13 +549,12 @@ function initImageUploadModule() {
         }
     }
 
-    function displayDetectionResults(response) {
+    function displayDetectionResults(response, elements) {
         localStorage.setItem("lastDetection", JSON.stringify(response));
-        const detectedObjectsList = getElementOrThrow("detectedObjects");
-        detectedObjectsList.innerHTML = "";
+        elements.detectedObjectsList.innerHTML = "";
 
         if (response.labels && response.labels.length > 0) {
-            detectedObjectsList.innerHTML = response.labels
+            elements.detectedObjectsList.innerHTML = response.labels
                 .map(label => `<li>${label}</li>`)
                 .join("");
 
@@ -570,12 +569,12 @@ function initImageUploadModule() {
                 elements.wikiInfoContainer.innerHTML = "<p>未找到相关 Wikipedia 介绍。</p>";
             }
         } else {
-            detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
+            elements.detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
             elements.wikiInfoContainer.innerHTML = "";
         }
     }
 
-    async function displayProcessedImage(imageId) {
+    async function displayProcessedImage(imageId, elements) {
         try {
             const imageResponse = await fetch(`http://127.0.0.1:8000/yolo/download/${imageId}`);
             if (!imageResponse.ok) {
@@ -724,15 +723,20 @@ function stopAllVideo() {
 }
 
 // 上传视频播放逻辑
-document.getElementById("videoUpload").addEventListener("change", function () {
-    const file = this.files[0];
-    if (file) {
-        const url = URL.createObjectURL(file);
-        const video = document.getElementById("uploadedVideo");
-        video.src = url;
-        video.play();
-    }
-});
+const videoUploadElement = document.getElementById("videoUpload");
+if (videoUploadElement) {
+    videoUploadElement.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            const video = document.getElementById("uploadedVideo");
+            if (video) {
+                video.src = url;
+                video.play();
+            }
+        }
+    });
+}
 
 //历史记录
 function renderHistoryData(dataArray) {
