@@ -130,11 +130,11 @@ function initChatModule() {
         const loadingMsg = addMessage("🤖 正在思考中...", "bot");
 
         try {
-            const response = await safeFetchChat("http://localhost:11434/api/generate", {
+            const response = await safeFetchChat("/api/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: "deepseek-r1:1.5b",
+                    model: "hf.co/pipa223/deepseekr1_1.5b_bird2:latest",
                     prompt: question,
                     stream: true
                 })
@@ -271,7 +271,8 @@ function initSpeechRecognitionModule() {
         resultBox: document.getElementById("question")
     };
 
-    const wsUrl = "ws://127.0.0.1:8000/ws/speech";
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}/ws/speech`;
     let websocket = null;
     let audioContext = null;
     let processor = null;
@@ -404,7 +405,7 @@ function initImageUploadModule() {
             const formData = new FormData();
             formData.append("file", file);
 
-            const response = await safeFetchImageDetection("http://127.0.0.1:8000/yolo/upload", {
+            const response = await safeFetchImageDetection("/yolo/upload", {
                 method: "POST",
                 body: formData
             });
@@ -451,7 +452,7 @@ function initImageUploadModule() {
             formData.append("file", file);
 
             // 使用fetch API进行流式请求
-            const response = await fetch('http://127.0.0.1:8000/yolo/upload/video', {
+            const response = await fetch('/yolo/upload/video', {
                 method: 'POST',
                 body: formData
             });
@@ -523,7 +524,7 @@ function initImageUploadModule() {
 
                         // 显示处理后的帧
                         if (data.frame_id) {
-                            frameImg.src = `http://127.0.0.1:8000/yolo/download/video/${data.frame_id}`;
+                            frameImg.src = `/yolo/download/video/${data.frame_id}`;
                         }
                     } catch (error) {
                         console.error("处理视频帧失败:", error);
@@ -563,7 +564,7 @@ function initImageUploadModule() {
             const previewFrames = response.frame_ids.slice(0, 5);
             previewFrames.forEach(frameId => {
                 const frameImg = document.createElement('img');
-                frameImg.src = `http://127.0.0.1:8000/yolo/download/video/${frameId}`;
+                frameImg.src = `/yolo/download/video/${frameId}`;
                 frameImg.alt = `Frame ${frameId}`;
                 frameImg.style.width = '100%';
                 frameImg.style.height = 'auto';
@@ -604,7 +605,7 @@ function initImageUploadModule() {
 
     async function displayProcessedImage(imageId, elements) {
         try {
-            const imageResponse = await fetch(`http://127.0.0.1:8000/yolo/download/${imageId}`);
+            const imageResponse = await fetch(`/yolo/download/${imageId}`);
             if (!imageResponse.ok) {
                 throw new Error(`获取处理后的图片失败: ${imageResponse.status}`);
             }
