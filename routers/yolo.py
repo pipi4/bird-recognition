@@ -9,7 +9,7 @@ import os
 from typing import List, Dict
 import asyncio
 import json
-from database import save_image, get_image, save_video_frame, get_video_frame, save_detection_history, get_detection_history, save_qa_interaction, get_qa_count
+from database import save_image, get_image, save_video_frame, get_video_frame, save_detection_history, get_detection_history, save_qa_interaction, get_qa_count, save_alert, get_alert_counts, get_species_alert_stats
 from datetime import datetime, timedelta
 import sqlite3
 
@@ -320,6 +320,13 @@ async def get_stats():
     # 获取今日问答次数
     today_qa_count = get_qa_count(today)
     
+    # 从species_alerts表获取预警统计数据
+    alert_counts = get_alert_counts()
+    
+    # 替换原有的预警计数方式
+    warnings_count = alert_counts["total"]
+    today_warnings_count = alert_counts["today"]
+    
     # 构建返回数据
     result = {
         "total": total_count,
@@ -328,7 +335,8 @@ async def get_stats():
         "today_warnings": today_warnings_count,
         "qa_count": qa_count,
         "today_qa_count": today_qa_count,
-        "detection_trend": trend_data
+        "detection_trend": trend_data,
+        "species_stats": get_species_alert_stats()  # 添加物种预警统计
     }
     
     # 打印返回数据，便于调试
@@ -366,6 +374,40 @@ async def save_qa(data: dict):
     return {
         "id": qa_id,
         "message": "问答记录保存成功",
+        "success": True
+    }
+
+# 保存物种预警
+@yolo_router.post(
+    "/alert",
+    status_code=status.HTTP_201_CREATED,
+    responses={201: {"description": "预警保存成功"}},
+)
+async def save_species_alert(data: dict):
+    """
+    保存物种预警记录。
+    
+    参数:
+    data (dict): 包含预警信息的字典
+    
+    返回:
+    dict: 操作结果
+    """
+    message = data.get("message", "")
+    species = data.get("species", "")
+    timestamp = data.get("timestamp", datetime.now().isoformat())
+    
+    if not species:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="物种名称不能为空",
+        )
+    
+    alert_id = save_alert(message, species)
+    
+    return {
+        "id": alert_id,
+        "message": "预警保存成功",
         "success": True
     }
 # endregion

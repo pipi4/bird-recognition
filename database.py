@@ -4,6 +4,7 @@ from typing import Optional, List
 import numpy as np
 import cv2
 import json
+from datetime import datetime
 
 # Database file path
 DB_PATH = "yolo_data.db"
@@ -53,6 +54,16 @@ def init_db():
         question TEXT NOT NULL,
         answer TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Create species_alerts table if not exists
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS species_alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message TEXT NOT NULL,
+        species TEXT NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
     
@@ -231,6 +242,92 @@ def get_qa_count(date: str = None) -> int:
     count = cursor.fetchone()[0]
     conn.close()
     return count
+
+def save_alert(message: str, species: str) -> int:
+    """Save a species alert to the database and return its ID."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        INSERT INTO species_alerts 
+        (message, species)
+        VALUES (?, ?)
+    """, (message, species))
+    
+    alert_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return alert_id
+
+def get_alerts(limit: int = 50) -> List[dict]:
+    """Retrieve species alert records."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT id, message, species, timestamp
+        FROM species_alerts
+        ORDER BY timestamp DESC
+        LIMIT ?
+    """, (limit,))
+    
+    results = []
+    for row in cursor.fetchall():
+        results.append({
+            'id': row[0],
+            'message': row[1],
+            'species': row[2],
+            'timestamp': row[3]
+        })
+    
+    conn.close()
+    return results
+
+def get_alert_counts() -> dict:
+    """Get total and today's alert counts."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Get total alerts count
+    cursor.execute("SELECT COUNT(*) FROM species_alerts")
+    total_count = cursor.fetchone()[0]
+    
+    # Get today's alerts count
+    today = datetime.now().strftime('%Y-%m-%d')
+    cursor.execute(
+        "SELECT COUNT(*) FROM species_alerts WHERE date(timestamp) = ?", 
+        (today,)
+    )
+    today_count = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return {
+        "total": total_count,
+        "today": today_count
+    }
+
+def get_species_alert_stats() -> List[dict]:
+    """Get statistics on species that triggered alerts."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT species, COUNT(*) as count
+        FROM species_alerts
+        GROUP BY species
+        ORDER BY count DESC
+    """)
+    
+    results = []
+    for row in cursor.fetchall():
+        results.append({
+            'species': row[0],
+            'count': row[1]
+        })
+    
+    conn.close()
+    return results
 
 # Initialize the database when the module is imported
 init_db() 

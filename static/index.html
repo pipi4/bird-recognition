@@ -373,17 +373,15 @@
             }
             const stats = await response.json();
             
-            // 更新统计数字
+            // 从API获取所有统计数据，包括预警数
             document.getElementById("totalCount").textContent = stats.total || 0;
             document.getElementById("todayCount").textContent = stats.today || 0;
             document.getElementById("warningCount").textContent = stats.warnings || 0;
             document.getElementById("todayWarningCount").textContent = stats.today_warnings || 0;
             document.getElementById("qaCount").textContent = stats.qa_count || 0;
             
-            // 如果有图表数据，渲染识别趋势图表
+            // 渲染识别趋势图表
             const chartPlaceholder = document.getElementById('chart-placeholder');
-            
-            // 使用后端提供的detection_trend数据渲染图表
             if (stats.detection_trend && stats.detection_trend.length > 0) {
                 renderSimpleChart(stats.detection_trend, chartPlaceholder);
             } else {
@@ -400,62 +398,95 @@
         }
     }
     
-    // 简单图表渲染函数
-    function renderSimpleChart(data, container) {
-        // 生成简单的图表
-        container.innerHTML = '';
+    // 渲染预警趋势图表
+    function renderAlertTrend() {
+        const alertHistory = JSON.parse(localStorage.getItem('alertHistory') || '[]');
+        const alertChart = document.getElementById('alert-chart');
         
-        // 确保有数据
-        if (!data || data.length === 0) {
-            container.innerHTML = '<div class="no-data">暂无识别趋势数据</div>';
+        if (alertHistory.length === 0) {
+            alertChart.innerHTML = '<div class="no-data">暂无预警趋势数据</div>';
             return;
         }
         
-        // 找出最大值用于缩放
-        const maxValue = Math.max(...data.map(item => item.count)) || 1;
+        // 按日期分组并计算每日预警次数
+        const alertsByDate = {};
+        alertHistory.forEach(alert => {
+            if (!alertsByDate[alert.date]) {
+                alertsByDate[alert.date] = 0;
+            }
+            alertsByDate[alert.date]++;
+        });
         
-        // 创建Y轴刻度
-        const yAxisTickCount = 5; // 纵轴刻度数量
-        const yAxisTicks = [];
-        for (let i = 0; i <= yAxisTickCount; i++) {
-            const value = Math.round(maxValue * (yAxisTickCount - i) / yAxisTickCount);
-            yAxisTicks.push(value);
+        // 转换成数组，用于图表渲染
+        const trendData = Object.keys(alertsByDate).map(date => ({
+            date: date,
+            count: alertsByDate[date]
+        }));
+        
+        // 排序，确保按日期顺序显示
+        trendData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // 只显示最近7天的数据
+        const recentTrendData = trendData.slice(-7);
+        
+        // 使用相同的图表渲染函数
+        renderSimpleChart(recentTrendData, alertChart);
+    }
+    
+    // 渲染物种预警统计
+    function renderSpeciesAlertStats() {
+        const alertHistory = JSON.parse(localStorage.getItem('alertHistory') || '[]');
+        const statsContainer = document.getElementById('species-alerts-stats');
+        
+        if (alertHistory.length === 0) {
+            statsContainer.innerHTML = '<div class="no-data">暂无物种预警数据</div>';
+            return;
         }
         
-        // 创建Y轴HTML
-        const yAxisHtml = `
-            <div class="y-axis">
-                ${yAxisTicks.map(tick => `<div class="y-axis-tick">${tick}</div>`).join('')}
-            </div>
+        // 统计每个物种的预警次数
+        const speciesCount = {};
+        alertHistory.forEach(alert => {
+            if (alert.species) {
+                if (!speciesCount[alert.species]) {
+                    speciesCount[alert.species] = 0;
+                }
+                speciesCount[alert.species]++;
+            }
+        });
+        
+        // 转换为数组并按次数排序
+        const speciesData = Object.keys(speciesCount).map(species => ({
+            species: species,
+            count: speciesCount[species]
+        })).sort((a, b) => b.count - a.count);
+        
+        // 创建物种预警统计表格
+        let tableHtml = `
+            <table class="species-stats-table">
+                <thead>
+                    <tr>
+                        <th>物种</th>
+                        <th>预警次数</th>
+                    </tr>
+                </thead>
+                <tbody>
         `;
         
-        // 图表柱状条
-        const chartBars = data.map(item => {
-            const height = Math.max((item.count / maxValue * 100), 3); // 至少3%的高度，以便看到
-            return `<div class="chart-bar" style="height:${height}%" title="${item.date}: ${item.count}次"></div>`;
-        }).join('');
+        speciesData.forEach(item => {
+            tableHtml += `
+                <tr>
+                    <td>${item.species}</td>
+                    <td>${item.count}</td>
+                </tr>
+            `;
+        });
         
-        // 创建柱状图容器
-        const chartHtml = `<div class="simple-chart">${chartBars}</div>`;
-        
-        // 创建日期标签
-        const labelsHtml = `
-            <div class="chart-labels">
-                ${data.map(item => `<div class="chart-label">${item.date}</div>`).join('')}
-            </div>
+        tableHtml += `
+                </tbody>
+            </table>
         `;
         
-        // 组合所有元素
-        container.innerHTML = `
-            <div class="chart-wrapper">
-                ${yAxisHtml}
-                ${chartHtml}
-                ${labelsHtml}
-            </div>
-        `;
-        
-        // 控制台输出数据，方便调试
-        console.log("图表数据:", data);
+        statsContainer.innerHTML = tableHtml;
     }
 
     const ws_url = "ws://localhost:8000/ws/speech";
@@ -517,6 +548,32 @@
         return false;
     }
     
+    // 检查视频会话中的物种预警（每个物种在一次视频处理中只预警一次）
+    function checkVideoSessionAlert(detectedObjects) {
+        if (!alertSpecies.length) return false;
+        
+        // 如果不存在会话预警集合，则创建一个
+        if (!window.videoSessionAlerts) {
+            window.videoSessionAlerts = new Set();
+        }
+        
+        let hasNewAlert = false;
+        
+        for (const obj of detectedObjects) {
+            // 只有当物种在预警列表中且尚未在本次会话中预警过时才触发
+            if (alertSpecies.includes(obj) && !window.videoSessionAlerts.has(obj)) {
+                createAlert(`发现预警物种: ${obj}`);
+                // 将此物种添加到已预警集合中
+                window.videoSessionAlerts.add(obj);
+                hasNewAlert = true;
+                
+                console.log(`已为物种 ${obj} 触发一次预警，此次视频会话中不会再次为此物种预警`);
+            }
+        }
+        
+        return hasNewAlert;
+    }
+    
     // 创建预警信息 - 更新为显示弹窗预警
     function createAlert(message) {
         const alertNotification = document.getElementById('alertNotification');
@@ -540,9 +597,77 @@
         // 播报预警信息
         speakAlertMessage(message);
         
+        // 将预警保存到数据库
+        saveAlertToDatabase(message);
+        
         // 记录到控制台以便调试
         console.log("显示预警:", message);
     }
+    
+    // 将预警保存到数据库
+    async function saveAlertToDatabase(message) {
+        // 提取物种名称
+        let speciesName = "";
+        if (message.includes("发现预警物种:")) {
+            speciesName = message.split("发现预警物种:")[1].trim();
+        }
+        
+        try {
+            // 向后端API发送预警数据
+            const response = await fetch('/yolo/alert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    species: speciesName,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`保存预警失败: ${response.status}`);
+            }
+            
+            // 也存入本地存储作为备份
+            saveAlertToLocalStorage(message, speciesName);
+            
+            // 记录成功信息
+            console.log("预警已保存到数据库");
+        } catch (error) {
+            console.error("保存预警数据失败:", error);
+            // 出错时仍保存到本地存储
+            saveAlertToLocalStorage(message, speciesName);
+        }
+    }
+    
+    // 保存预警数据到本地存储（作为备份）
+    function saveAlertToLocalStorage(message, speciesName) {
+        // 获取当前的预警历史数据
+        const alertHistory = JSON.parse(localStorage.getItem('alertHistory') || '[]');
+        
+        // 创建新的预警记录
+        const newAlert = {
+            message: message,
+            species: speciesName || "",
+            timestamp: new Date().toISOString(),
+            date: new Date().toLocaleDateString()
+        };
+        
+        // 添加到历史记录
+        alertHistory.push(newAlert);
+        
+        // 最多保存最近100条记录
+        if (alertHistory.length > 100) {
+            alertHistory.shift(); // 移除最旧的记录
+        }
+        
+        // 保存回本地存储
+        localStorage.setItem('alertHistory', JSON.stringify(alertHistory));
+    }
+    
+    // 更新预警计数器 - 不再需要，数据从后端获取
     
     // 语音播报预警信息
     function speakAlertMessage(message) {
@@ -613,8 +738,67 @@
     window.removeSpeciesAlert = removeSpeciesAlert;
     window.closeAlertNotification = closeAlertNotification;
     window.checkSpeciesAlert = checkSpeciesAlert;
+    window.checkVideoSessionAlert = checkVideoSessionAlert;
     window.createAlert = createAlert;
     window.speakAlertMessage = speakAlertMessage;
+
+    // 简单图表渲染函数
+    function renderSimpleChart(data, container) {
+        // 生成简单的图表
+        container.innerHTML = '';
+        
+        // 确保有数据
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="no-data">暂无图表数据</div>';
+            return;
+        }
+        
+        // 找出最大值用于缩放
+        const maxValue = Math.max(...data.map(item => item.count)) || 1;
+        
+        // 创建Y轴刻度
+        const yAxisTickCount = 5; // 纵轴刻度数量
+        const yAxisTicks = [];
+        for (let i = 0; i <= yAxisTickCount; i++) {
+            const value = Math.round(maxValue * (yAxisTickCount - i) / yAxisTickCount);
+            yAxisTicks.push(value);
+        }
+        
+        // 创建Y轴HTML
+        const yAxisHtml = `
+            <div class="y-axis">
+                ${yAxisTicks.map(tick => `<div class="y-axis-tick">${tick}</div>`).join('')}
+            </div>
+        `;
+        
+        // 图表柱状条
+        const chartBars = data.map(item => {
+            const height = Math.max((item.count / maxValue * 100), 3); // 至少3%的高度，以便看到
+            return `<div class="chart-bar" style="height:${height}%" title="${item.date}: ${item.count}次"></div>`;
+        }).join('');
+        
+        // 创建柱状图容器
+        const chartHtml = `<div class="simple-chart">${chartBars}</div>`;
+        
+        // 创建日期标签
+        const labelsHtml = `
+            <div class="chart-labels">
+                ${data.map(item => `<div class="chart-label">${item.date}</div>`).join('')}
+            </div>
+        `;
+        
+        // 组合所有元素
+        container.innerHTML = `
+            <div class="chart-wrapper">
+                ${yAxisHtml}
+                ${chartHtml}
+                ${labelsHtml}
+            </div>
+        `;
+        
+        // 控制台输出数据，方便调试
+        console.log("图表数据:", data);
+    }
 </script>
 </body>
 </html>

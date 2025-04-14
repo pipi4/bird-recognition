@@ -448,6 +448,9 @@ function initImageUploadModule() {
         elements.detectedObjectsList.innerHTML = '';
         elements.uploadPreview.style.backgroundImage = 'none';
 
+        // 初始化视频会话的预警记录，用于防止重复预警
+        window.videoSessionAlerts = new Set();
+
         elements.processingOverlay.style.display = "grid";
 
         try {
@@ -532,8 +535,11 @@ function initImageUploadModule() {
                                 .map(label => `<li>${label}</li>`)
                                 .join("");
                             
-                            // 检查物种预警 - 直接调用全局函数
-                            if (typeof window.checkSpeciesAlert === 'function') {
+                            // 检查物种预警 - 使用视频会话追踪
+                            if (typeof window.checkVideoSessionAlert === 'function') {
+                                window.checkVideoSessionAlert(data.labels);
+                            } else if (typeof window.checkSpeciesAlert === 'function') {
+                                // 备用方法，但可能导致多次提醒
                                 window.checkSpeciesAlert(data.labels);
                             } else {
                                 console.error("物种预警函数未找到");
@@ -566,14 +572,22 @@ function initImageUploadModule() {
         const detectedObjectsList = getElementOrThrow("detectedObjects");
         detectedObjectsList.innerHTML = "";
 
+        // 初始化视频会话的预警记录，用于防止重复预警
+        if (!window.videoSessionAlerts) {
+            window.videoSessionAlerts = new Set();
+        }
+
         if (response.unique_labels && response.unique_labels.length > 0) {
             // 显示所有检测到的标签
             detectedObjectsList.innerHTML = response.unique_labels
                 .map(label => `<li>${label}</li>`)
                 .join("");
             
-            // 检查物种预警 - 直接调用全局函数
-            if (typeof window.checkSpeciesAlert === 'function') {
+            // 检查物种预警 - 使用视频会话追踪
+            if (typeof window.checkVideoSessionAlert === 'function') {
+                window.checkVideoSessionAlert(response.unique_labels);
+            } else if (typeof window.checkSpeciesAlert === 'function') {
+                // 备用方法，但可能导致多次提醒
                 window.checkSpeciesAlert(response.unique_labels);
             } else {
                 console.error("物种预警函数未找到");

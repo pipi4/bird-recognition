@@ -1410,4 +1410,107 @@ body > * {
     color: #aaa;
 }
 
+/* 物种预警统计样式 */
+.species-alerts-container {
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.species-alerts-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.species-stats-area {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.species-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.species-stats-table th,
+.species-stats-table td {
+    padding: 10px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.species-stats-table th {
+    background: rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    color: var(--primary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.species-stats-table tr:last-child td {
+    border-bottom: none;
+}
+
+.species-stats-table tr:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 预警统计图表样式 */
+#alert-chart {
+    border: 1px solid var(--border-color);
+    height: 300px;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+/* 深色模式样式 */
+[data-theme="dark"] .species-alerts-container {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .species-stats-area {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .species-stats-table th {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--secondary);
+}
+
+[data-theme="dark"] .species-stats-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] #alert-chart {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 确保相关元素在不同模式下正确显示 */
+[data-theme="dark"] .species-stats-table th,
+[data-theme="dark"] .species-stats-table td {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .species-stats-table th,
+    .species-stats-table td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .species-alerts-container,
+    .chart-container {
+        padding: 10px;
+    }
+}
+
 
