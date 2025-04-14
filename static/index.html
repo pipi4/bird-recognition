@@ -143,13 +143,31 @@
         <span class="close-btn" onclick="closePopup('alertsPopup')">&times;</span>
         <h2>异常预警设置</h2>
 
-        <label for="thresholdInput">预警阈值设置：</label>
-        <input type="number" id="thresholdInput" placeholder="例如：10">
-
-        <h3>当前预警信息</h3>
-        <div class="alert-list" id="alertList">
-            <!-- 动态插入 alert-card 项 -->
+        <div class="alert-settings">
+            <div class="setting-group">
+                <h3>物种预警</h3>
+                <div class="species-input-group">
+                    <input type="text" id="speciesInput" placeholder="输入鸟类物种名称">
+                    <button id="addSpeciesBtn" class="primary-btn">添加</button>
+                </div>
+                <div class="species-list" id="speciesList">
+                    <!-- 动态插入物种预警项 -->
+                </div>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- 预警通知弹窗 -->
+<div id="alertNotification" class="alert-notification">
+    <div class="alert-notification-content">
+        <div class="alert-header">
+            <span class="alert-icon">⚠️</span>
+            <span class="alert-title">预警通知</span>
+            <span class="close-alert" onclick="closeAlertNotification()">&times;</span>
+        </div>
+        <div class="alert-message" id="alertNotificationMessage"></div>
+        <div class="alert-time" id="alertNotificationTime"></div>
     </div>
 </div>
 
@@ -441,6 +459,162 @@
     }
 
     const ws_url = "ws://localhost:8000/ws/speech";
+
+    // 初始化物种预警列表
+    let alertSpecies = JSON.parse(localStorage.getItem('alertSpecies') || '[]');
+    
+    // 添加物种预警
+    function addSpeciesAlert() {
+        const speciesInput = document.getElementById('speciesInput');
+        const species = speciesInput.value.trim();
+        
+        if (species && !alertSpecies.includes(species)) {
+            alertSpecies.push(species);
+            localStorage.setItem('alertSpecies', JSON.stringify(alertSpecies));
+            updateSpeciesList();
+            speciesInput.value = '';
+        }
+    }
+    
+    // 删除物种预警
+    function removeSpeciesAlert(species) {
+        alertSpecies = alertSpecies.filter(item => item !== species);
+        localStorage.setItem('alertSpecies', JSON.stringify(alertSpecies));
+        updateSpeciesList();
+    }
+    
+    // 更新物种列表显示
+    function updateSpeciesList() {
+        const speciesList = document.getElementById('speciesList');
+        speciesList.innerHTML = '';
+        
+        if (alertSpecies.length === 0) {
+            speciesList.innerHTML = '<div class="empty-list">暂无物种预警</div>';
+            return;
+        }
+        
+        alertSpecies.forEach(species => {
+            const item = document.createElement('div');
+            item.className = 'species-item';
+            item.innerHTML = `
+                <span>${species}</span>
+                <button class="delete-btn" onclick="removeSpeciesAlert('${species}')">×</button>
+            `;
+            speciesList.appendChild(item);
+        });
+    }
+    
+    // 检查是否需要触发物种预警
+    function checkSpeciesAlert(detectedObjects) {
+        if (!alertSpecies.length) return false;
+        
+        for (const obj of detectedObjects) {
+            if (alertSpecies.includes(obj)) {
+                createAlert(`发现预警物种: ${obj}`);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // 创建预警信息 - 更新为显示弹窗预警
+    function createAlert(message) {
+        const alertNotification = document.getElementById('alertNotification');
+        const alertMessage = document.getElementById('alertNotificationMessage');
+        const alertTime = document.getElementById('alertNotificationTime');
+        
+        const now = new Date();
+        const timeString = now.toLocaleString();
+        
+        alertMessage.textContent = message;
+        alertTime.textContent = timeString;
+        
+        // 显示预警弹窗
+        alertNotification.style.display = 'block';
+        
+        // 5秒后自动关闭
+        setTimeout(() => {
+            closeAlertNotification();
+        }, 5000);
+
+        // 播报预警信息
+        speakAlertMessage(message);
+        
+        // 记录到控制台以便调试
+        console.log("显示预警:", message);
+    }
+    
+    // 语音播报预警信息
+    function speakAlertMessage(message) {
+        if ('speechSynthesis' in window) {
+            // 停止当前正在播放的语音
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 1.0;  // 语速稍慢，确保清晰
+            utterance.pitch = 1.1; // 稍高的音调，表示警示
+            utterance.volume = 1.0; // 最大音量
+            
+            // 预警播报使用优先级
+            utterance.onstart = () => {
+                console.log("预警语音播报开始");
+            };
+            
+            utterance.onend = () => {
+                console.log("预警语音播报结束");
+            };
+            
+            utterance.onerror = (e) => {
+                console.error("预警语音播报错误:", e);
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+    
+    // 关闭预警通知
+    function closeAlertNotification() {
+        const alertNotification = document.getElementById('alertNotification');
+        
+        // 添加淡出动画
+        alertNotification.style.animation = 'fadeOut 0.5s ease-out';
+        
+        // 动画结束后隐藏
+        setTimeout(() => {
+            alertNotification.style.display = 'none';
+            alertNotification.style.animation = 'slideIn 0.5s ease-out';
+        }, 500);
+    }
+    
+    // 添加事件监听器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化物种列表
+        updateSpeciesList();
+        
+        // 添加物种按钮点击事件
+        const addSpeciesBtn = document.getElementById('addSpeciesBtn');
+        if (addSpeciesBtn) {
+            addSpeciesBtn.addEventListener('click', addSpeciesAlert);
+        }
+        
+        // 输入框回车事件
+        const speciesInput = document.getElementById('speciesInput');
+        if (speciesInput) {
+            speciesInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addSpeciesAlert();
+                }
+            });
+        }
+    });
+    
+    // 将函数暴露给全局作用域
+    window.removeSpeciesAlert = removeSpeciesAlert;
+    window.closeAlertNotification = closeAlertNotification;
+    window.checkSpeciesAlert = checkSpeciesAlert;
+    window.createAlert = createAlert;
+    window.speakAlertMessage = speakAlertMessage;
 </script>
 </body>
 </html>

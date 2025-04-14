@@ -531,6 +531,13 @@ function initImageUploadModule() {
                             elements.detectedObjectsList.innerHTML = data.labels
                                 .map(label => `<li>${label}</li>`)
                                 .join("");
+                            
+                            // 检查物种预警 - 直接调用全局函数
+                            if (typeof window.checkSpeciesAlert === 'function') {
+                                window.checkSpeciesAlert(data.labels);
+                            } else {
+                                console.error("物种预警函数未找到");
+                            }
                         } else {
                             elements.detectedObjectsList.innerHTML = "<li>未检测到对象</li>";
                         }
@@ -564,6 +571,13 @@ function initImageUploadModule() {
             detectedObjectsList.innerHTML = response.unique_labels
                 .map(label => `<li>${label}</li>`)
                 .join("");
+            
+            // 检查物种预警 - 直接调用全局函数
+            if (typeof window.checkSpeciesAlert === 'function') {
+                window.checkSpeciesAlert(response.unique_labels);
+            } else {
+                console.error("物种预警函数未找到");
+            }
 
             // 显示视频帧
             elements.resultContainer.innerHTML = "";
@@ -599,6 +613,13 @@ function initImageUploadModule() {
             elements.detectedObjectsList.innerHTML = response.labels
                 .map(label => `<li>${label}</li>`)
                 .join("");
+            
+            // 检查物种预警 - 直接调用全局函数
+            if (typeof window.checkSpeciesAlert === 'function') {
+                window.checkSpeciesAlert(response.labels);
+            } else {
+                console.error("物种预警函数未找到");
+            }
 
             if (response.wiki_info) {
                 const wikiInfo = response.wiki_info;
@@ -867,14 +888,4 @@ function updateAlerts(alerts) {
         list.appendChild(card);
     });
 }
-
-//监听阈值变化（实时传给后端）
-document.getElementById("thresholdInput").addEventListener("change", function () {
-    const threshold = parseFloat(this.value);
-    if (!isNaN(threshold)) {
-        // 可发送到后端 API
-        console.log("设置新的阈值：", threshold);
-        // fetch('/api/set-threshold', { method: 'POST', body: JSON.stringify({ threshold }) });
-    }
-});
 
