@@ -131,7 +131,7 @@ function initChatModule() {
         let finalAnswer = '';
 
         try {
-            const response = await safeFetchChat("http://localhost:11434/api/generate", {
+            const response = await safeFetchChat("/api/llm/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -144,11 +144,12 @@ function initChatModule() {
                 })
             });
 
+            // 使用 EventSource API 处理服务器发送事件 (SSE)
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-            let done = false;
             let text = '';
             let lastText = '';
+            let done = false;
 
             while (!done) {
                 const { value, done: doneReading } = await reader.read();
@@ -156,33 +157,46 @@ function initChatModule() {
 
                 if (value) {
                     const chunk = decoder.decode(value, { stream: true });
-                    const jsonObjects = chunk.split('\n').filter(Boolean);
+                    const eventLines = chunk.split('\n\n').filter(Boolean);
 
-                    jsonObjects.forEach(jsonObject => {
-                        const parsed = JSON.parse(jsonObject);
-                        if (parsed.response) {
-                            text += parsed.response;
-                            finalAnswer = text; // 保存完整的回答
-
-                            const rendered = DOMPurify.sanitize(marked.parse(text));
-                            loadingMsg.innerHTML = rendered;
-
-                            const newText = text.slice(lastText.length);
-
-                            if (newText) {
-                                accumulatedText += newText;
-
-                                clearTimeout(window.textTimeout);
-                                window.textTimeout = setTimeout(() => {
-                                    queueSpeech(accumulatedText);
-                                    accumulatedText = '';
-                                }, 1000);
-                                lastText = text;
+                    for (const eventLine of eventLines) {
+                        if (!eventLine.startsWith('data: ')) continue;
+                        
+                        try {
+                            const jsonData = JSON.parse(eventLine.substring(6));
+                            
+                            if (jsonData.error) {
+                                console.error("LLM Error:", jsonData.error);
+                                loadingMsg.textContent = `错误: ${jsonData.error}`;
+                                continue;
                             }
+                            
+                            if (jsonData.response) {
+                                text += jsonData.response;
+                                finalAnswer = text; // 保存完整的回答
 
-                            elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+                                const rendered = DOMPurify.sanitize(marked.parse(text));
+                                loadingMsg.innerHTML = rendered;
+
+                                const newText = text.slice(lastText.length);
+
+                                if (newText) {
+                                    accumulatedText += newText;
+
+                                    clearTimeout(window.textTimeout);
+                                    window.textTimeout = setTimeout(() => {
+                                        queueSpeech(accumulatedText);
+                                        accumulatedText = '';
+                                    }, 1000);
+                                    lastText = text;
+                                }
+
+                                elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+                            }
+                        } catch (error) {
+                            console.error("解析响应失败:", error, eventLine);
                         }
-                    });
+                    }
                 }
             }
 
