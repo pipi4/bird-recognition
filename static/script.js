@@ -137,7 +137,10 @@ function initChatModule() {
                 body: JSON.stringify({
                     model: "hf.co/pipa223/deepseekr1_1.5b_bird2:latest",
                     prompt: question,
-                    stream: true
+                    stream: true,
+                    options: {
+                        num_predict: 500  // Ollama API 使用 num_predict 而不是 max_tokens
+                    }
                 })
             });
 
