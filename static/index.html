@@ -153,26 +153,39 @@
     </div>
 </div>
 
-<!-- 数据看板 弹窗 -->
+<!-- 数据看板弹窗 -->
 <div id="dashboardPopup" class="popup-overlay">
     <div class="popup-content">
         <span class="close-btn" onclick="closePopup('dashboardPopup')">&times;</span>
         <h2>📊 数据看板</h2>
         <div class="dashboard-stats">
-            <p><strong>总检测数：</strong> <span id="totalCount">--</span></p>
-            <p><strong>当日检测数：</strong> <span id="todayCount">--</span></p>
-            <p><strong>预警数：</strong> <span id="warningCount">--</span></p>
-            <p><strong>当日预警数：</strong> <span id="todayWarningCount">--</span></p>
-            <p><strong>AI问答情况：</strong> <span id="qaCount">--</span></p>
+            <div class="stat-card">
+                <h3>总识别数</h3>
+                <p id="totalCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>今日识别数</h3>
+                <p id="todayCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>总预警数</h3>
+                <p id="warningCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>今日预警数</h3>
+                <p id="todayWarningCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>问答次数</h3>
+                <p id="qaCount">0</p>
+            </div>
         </div>
         <div class="chart-container">
-            <p>预警趋势图：</p>
-            <div id="chart-placeholder" style="width: 100%; height: 300px; background: #f0f0f0; border-radius: 8px;"></div>
+            <h3>识别趋势</h3>
+            <div id="chart-placeholder" class="chart-area"></div>
         </div>
     </div>
 </div>
-
-
 
 <footer class="fact-container">
     <p id="factBox">正在加载趣闻...</p>
@@ -317,9 +330,11 @@
     window.openPopup = function(popupId) {
         const popup = document.getElementById(popupId);
         if (popup) {
-            popup.style.display = 'block';
+            popup.style.display = 'flex'; // 使用flex布局替代block，确保居中
             if (popupId === 'historyPopup') {
                 loadHistory();
+            } else if (popupId === 'dashboardPopup') {
+                loadDashboardStats();
             }
         }
     };
@@ -330,6 +345,100 @@
             popup.style.display = 'none';
         }
     };
+
+    // 加载数据看板统计信息
+    async function loadDashboardStats() {
+        try {
+            const response = await fetch('/yolo/stats');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const stats = await response.json();
+            
+            // 更新统计数字
+            document.getElementById("totalCount").textContent = stats.total || 0;
+            document.getElementById("todayCount").textContent = stats.today || 0;
+            document.getElementById("warningCount").textContent = stats.warnings || 0;
+            document.getElementById("todayWarningCount").textContent = stats.today_warnings || 0;
+            document.getElementById("qaCount").textContent = stats.qa_count || 0;
+            
+            // 如果有图表数据，渲染识别趋势图表
+            const chartPlaceholder = document.getElementById('chart-placeholder');
+            
+            // 使用后端提供的detection_trend数据渲染图表
+            if (stats.detection_trend && stats.detection_trend.length > 0) {
+                renderSimpleChart(stats.detection_trend, chartPlaceholder);
+            } else {
+                chartPlaceholder.innerHTML = '暂无识别趋势数据';
+            }
+        } catch (error) {
+            console.error('Failed to load dashboard stats:', error);
+            document.getElementById("totalCount").textContent = '-';
+            document.getElementById("todayCount").textContent = '-';
+            document.getElementById("warningCount").textContent = '-';
+            document.getElementById("todayWarningCount").textContent = '-';
+            document.getElementById("qaCount").textContent = '-';
+            document.getElementById('chart-placeholder').innerHTML = '加载图表数据失败';
+        }
+    }
+    
+    // 简单图表渲染函数
+    function renderSimpleChart(data, container) {
+        // 生成简单的图表
+        container.innerHTML = '';
+        
+        // 确保有数据
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="no-data">暂无识别趋势数据</div>';
+            return;
+        }
+        
+        // 找出最大值用于缩放
+        const maxValue = Math.max(...data.map(item => item.count)) || 1;
+        
+        // 创建Y轴刻度
+        const yAxisTickCount = 5; // 纵轴刻度数量
+        const yAxisTicks = [];
+        for (let i = 0; i <= yAxisTickCount; i++) {
+            const value = Math.round(maxValue * (yAxisTickCount - i) / yAxisTickCount);
+            yAxisTicks.push(value);
+        }
+        
+        // 创建Y轴HTML
+        const yAxisHtml = `
+            <div class="y-axis">
+                ${yAxisTicks.map(tick => `<div class="y-axis-tick">${tick}</div>`).join('')}
+            </div>
+        `;
+        
+        // 图表柱状条
+        const chartBars = data.map(item => {
+            const height = Math.max((item.count / maxValue * 100), 3); // 至少3%的高度，以便看到
+            return `<div class="chart-bar" style="height:${height}%" title="${item.date}: ${item.count}次"></div>`;
+        }).join('');
+        
+        // 创建柱状图容器
+        const chartHtml = `<div class="simple-chart">${chartBars}</div>`;
+        
+        // 创建日期标签
+        const labelsHtml = `
+            <div class="chart-labels">
+                ${data.map(item => `<div class="chart-label">${item.date}</div>`).join('')}
+            </div>
+        `;
+        
+        // 组合所有元素
+        container.innerHTML = `
+            <div class="chart-wrapper">
+                ${yAxisHtml}
+                ${chartHtml}
+                ${labelsHtml}
+            </div>
+        `;
+        
+        // 控制台输出数据，方便调试
+        console.log("图表数据:", data);
+    }
 
     const ws_url = "ws://localhost:8000/ws/speech";
 </script>

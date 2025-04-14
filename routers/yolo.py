@@ -6,10 +6,12 @@ import numpy as np
 import cv2
 from .wikipeida_api import get_wikipedia_summary  # 引入 Wikipedia API 查询
 import os
-from typing import List
+from typing import List, Dict
 import asyncio
 import json
-from database import save_image, get_image, save_video_frame, get_video_frame, save_detection_history, get_detection_history
+from database import save_image, get_image, save_video_frame, get_video_frame, save_detection_history, get_detection_history, save_qa_interaction, get_qa_count
+from datetime import datetime, timedelta
+import sqlite3
 
 # 创建一个API路由实例，路径前缀为/yolo，标签为"图像上传和识别"
 yolo_router = APIRouter(tags=["图像上传和识别"], prefix="/yolo")
@@ -243,4 +245,127 @@ async def get_history(limit: int = 50):
     """
     history = get_detection_history(limit)
     return history
+# endregion
+
+# region stats
+@yolo_router.get(
+    "/stats",
+    status_code=status.HTTP_200_OK,
+    responses={200: {"description": "成功获取统计数据"}},
+)
+async def get_stats():
+    """
+    获取统计数据，包括总识别数、当日识别数、预警数等。
+    
+    返回:
+    Dict: 包含各项统计数据的字典
+    """
+    # 引用数据库路径
+    DB_PATH = "yolo_data.db"
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # 获取总识别数
+    cursor.execute("SELECT COUNT(*) FROM detection_history")
+    total_count = cursor.fetchone()[0]
+    
+    # 获取当日识别数
+    today = datetime.now().strftime('%Y-%m-%d')
+    cursor.execute(
+        "SELECT COUNT(*) FROM detection_history WHERE date(created_at) = ?", 
+        (today,)
+    )
+    today_count = cursor.fetchone()[0]
+    
+    # 获取总预警数
+    cursor.execute("SELECT COUNT(*) FROM detection_history WHERE has_warning = 1")
+    warnings_count = cursor.fetchone()[0]
+    
+    # 获取当日预警数
+    cursor.execute(
+        "SELECT COUNT(*) FROM detection_history WHERE has_warning = 1 AND date(created_at) = ?", 
+        (today,)
+    )
+    today_warnings_count = cursor.fetchone()[0]
+    
+    # 获取近7天的识别趋势
+    trend_data = []
+    for i in range(6, -1, -1):
+        date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+        next_date = (datetime.now() - timedelta(days=i-1)).strftime('%Y-%m-%d') if i > 0 else (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        cursor.execute(
+            "SELECT COUNT(*) FROM detection_history WHERE date(created_at) >= ? AND date(created_at) < ?",
+            (date, next_date)
+        )
+        count = cursor.fetchone()[0]
+        
+        # 将日期格式化为月/日
+        display_date = (datetime.now() - timedelta(days=i)).strftime('%m/%d')
+        
+        trend_data.append({
+            "date": display_date,
+            "count": count
+        })
+    
+    # 打印日志，便于调试
+    print(f"趋势数据: {trend_data}")
+    
+    conn.close()
+    
+    # 获取问答次数
+    qa_count = get_qa_count()
+    
+    # 获取今日问答次数
+    today_qa_count = get_qa_count(today)
+    
+    # 构建返回数据
+    result = {
+        "total": total_count,
+        "today": today_count,
+        "warnings": warnings_count,
+        "today_warnings": today_warnings_count,
+        "qa_count": qa_count,
+        "today_qa_count": today_qa_count,
+        "detection_trend": trend_data
+    }
+    
+    # 打印返回数据，便于调试
+    print(f"Stats API 返回数据: {result}")
+    
+    return result
+
+# 保存问答交互记录
+@yolo_router.post(
+    "/qa",
+    status_code=status.HTTP_201_CREATED,
+    responses={201: {"description": "问答记录保存成功"}},
+)
+async def save_qa(data: dict):
+    """
+    保存问答交互记录。
+    
+    参数:
+    data (dict): 包含问题和回答的字典
+    
+    返回:
+    dict: 操作结果
+    """
+    question = data.get("question")
+    answer = data.get("answer")
+    
+    if not question:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="问题不能为空",
+        )
+    
+    qa_id = save_qa_interaction(question, answer)
+    
+    return {
+        "id": qa_id,
+        "message": "问答记录保存成功",
+        "success": True
+    }
 # endregion

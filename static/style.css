@@ -728,41 +728,65 @@ body > * {
             margin-top: 0;
         }
 
-/* 弹窗样式 */
-.popup {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
+/* 弹窗遮罩层样式 */
+.popup-overlay {
+    position: fixed;    /* 让它覆盖全屏 */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;      /* 默认隐藏 */
+    background-color: rgba(0, 0, 0, 0.5); /* 背景半透明遮罩 */
+    z-index: 1000;       /* 确保弹窗在最上层 */
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 弹窗内容框样式 */
 .popup-content {
-            background: white;
-            width: 90%;
-            max-width: 600px;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 12px;
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-        }
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;          /* 弹窗宽度 */
+    max-width: 900px;    /* 增加最大宽度 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;  /* 让关闭按钮定位 */
+    margin: 0 auto;      /* 水平居中 */
+}
+
+/* 普通弹窗样式 */
+.popup {
+    display: none;
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
 .alert-card {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 
 .history-table {
    max-width: 1000px;
@@ -789,59 +813,178 @@ body > * {
     font-weight: bold;
 }
 
-/* 弹窗遮罩层样式 */
-.popup-overlay {
-    position: fixed;    /* 让它覆盖全屏 */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: none;      /* 默认隐藏 */
-    justify-content: center; /* 横向居中 */
-    align-items: center;     /* 纵向居中 */
-    background-color: rgba(0, 0, 0, 0.5); /* 背景半透明遮罩 */
-    z-index: 1000;       /* 确保弹窗在最上层 */
-}
-
-/* 弹窗内容框样式 */
-.popup-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 80%;          /* 弹窗宽度 */
-    max-width: 500px;    /* 最大宽度 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    position: relative;  /* 让关闭按钮定位 */
-}
-
-/* 关闭按钮样式 */
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    color: #333;
-    cursor: pointer;
-}
-
 /* 数据看板 弹窗样式 */
 .dashboard-stats {
-    margin: 1em 0;
+    margin: 1.5em 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
 }
 
-.dashboard-stats p {
+.stat-card {
+    background-color: #f8f8f8;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.stat-card h3 {
+    margin: 0 0 0.5rem 0;
     font-size: 1rem;
-    margin: 0.5em 0;
+    color: #666;
+}
+
+.stat-card p {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
 }
 
 .chart-container {
-    margin-top: 1em;
+    margin: 2em auto 0;
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 100%;
+    position: relative;
+}
+
+.chart-area {
+    height: 330px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    padding: 20px 20px 10px;
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+}
+
+.chart-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Y轴容器 */
+.y-axis {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    height: 220px;
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+    text-align: right;
+}
+
+.y-axis-tick {
+    position: relative;
+    width: 100%;
+    text-align: right;
+    padding-right: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.y-axis-tick::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 5px;
+    height: 1px;
+    background-color: #aaa;
+}
+
+/* 图表本体 */
+.simple-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 220px;
+    width: 90%;
+    margin: 0 auto;
+    position: relative;
+    border-bottom: 2px solid #ddd;
+    border-left: 2px solid #ddd;
+    gap: 15px;
+    padding-left: 40px; /* 为Y轴预留空间 */
+}
+
+.chart-bar {
+    width: 35px;
+    background-color: #4c84ff;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 图表标签 */
+.chart-labels {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    margin: 8px auto 0;
+    padding-left: 40px; /* 为Y轴预留相同空间 */
+    gap: 15px;
+}
+
+.chart-label {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    width: 35px; /* 与柱状图宽度一致 */
+}
+
+/* 数据看板 暗色模式 */
+[data-theme="dark"] .stat-card {
+    background-color: #2a2a2a;
+}
+
+[data-theme="dark"] .stat-card h3 {
+    color: #aaa;
+}
+
+[data-theme="dark"] .stat-card p {
+    color: #fff;
+}
+
+[data-theme="dark"] .chart-container {
+    background-color: #2a2a2a;
+}
+
+[data-theme="dark"] .chart-area {
+    background-color: #333;
 }
 
 /* 预警趋势图表的占位符 */
 #chart-placeholder {
     color: #888;
     font-style: italic;
+    text-align: center;
+    width: 100%;
+    height: 100%;
 }
 
 /* 视频检测弹窗布局 */
@@ -962,6 +1105,74 @@ body > * {
 .detect-result-box li {
     padding: 0.4em 0;
     border-bottom: 1px solid #eee;
+}
+
+/* 无数据提示 */
+.no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+    font-style: italic;
+}
+
+[data-theme="dark"] .simple-chart {
+    border-bottom: 2px solid #555;
+    border-left: 2px solid #555;
+}
+
+[data-theme="dark"] .y-axis-tick {
+    color: #aaa;
+}
+
+[data-theme="dark"] .y-axis-tick::after {
+    background-color: #666;
+}
+
+.chart-bar:hover {
+    background-color: #3366cc;
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.chart-bar::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.chart-bar:hover::after {
+    opacity: 1;
+}
+
+[data-theme="dark"] .chart-bar {
+    background-color: #66a0ff;
+}
+
+[data-theme="dark"] .chart-bar:hover {
+    background-color: #99ccff;
+}
+
+[data-theme="dark"] .chart-label {
+    color: #aaa;
+}
+
+[data-theme="dark"] .simple-chart {
+    border-bottom: 2px solid #555;
+    border-left: 2px solid #555;
 }
 
 

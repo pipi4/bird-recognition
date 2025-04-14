@@ -46,6 +46,16 @@ def init_db():
     )
     ''')
     
+    # Create qa_interactions table if not exists
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS qa_interactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question TEXT NOT NULL,
+        answer TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -163,6 +173,64 @@ def get_detection_history(limit: int = 50) -> List[dict]:
     
     conn.close()
     return results
+
+def save_qa_interaction(question: str, answer: str = None) -> int:
+    """Save a QA interaction to the database and return its ID."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        INSERT INTO qa_interactions 
+        (question, answer)
+        VALUES (?, ?)
+    """, (question, answer))
+    
+    qa_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return qa_id
+
+def get_qa_interactions(limit: int = 50) -> List[dict]:
+    """Retrieve QA interaction records."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT id, question, answer, created_at
+        FROM qa_interactions
+        ORDER BY created_at DESC
+        LIMIT ?
+    """, (limit,))
+    
+    results = []
+    for row in cursor.fetchall():
+        results.append({
+            'id': row[0],
+            'question': row[1],
+            'answer': row[2],
+            'created_at': row[3]
+        })
+    
+    conn.close()
+    return results
+
+def get_qa_count(date: str = None) -> int:
+    """Get the count of QA interactions, optionally filtered by date."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    if date:
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM qa_interactions
+            WHERE date(created_at) = ?
+        """, (date,))
+    else:
+        cursor.execute("SELECT COUNT(*) FROM qa_interactions")
+    
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
 
 # Initialize the database when the module is imported
 init_db() 

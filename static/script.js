@@ -128,9 +128,10 @@ function initChatModule() {
         }
 
         const loadingMsg = addMessage("🤖 正在思考中...", "bot");
+        let finalAnswer = '';
 
         try {
-            const response = await safeFetchChat("/api/generate", {
+            const response = await safeFetchChat("http://localhost:11434/api/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -158,6 +159,7 @@ function initChatModule() {
                         const parsed = JSON.parse(jsonObject);
                         if (parsed.response) {
                             text += parsed.response;
+                            finalAnswer = text; // 保存完整的回答
 
                             const rendered = DOMPurify.sanitize(marked.parse(text));
                             loadingMsg.innerHTML = rendered;
@@ -180,6 +182,17 @@ function initChatModule() {
                     });
                 }
             }
+
+            // 记录问答交互
+            await fetch('/yolo/qa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: question,
+                    answer: finalAnswer
+                })
+            }).catch(error => console.error('Failed to log QA interaction:', error));
+
         } catch (error) {
             loadingMsg.textContent = `错误: ${error.message}`;
             console.error("消息发送失败:", error);
@@ -792,11 +805,41 @@ function updateDashboard(data) {
     document.getElementById("totalCount").textContent = data.total || 0;
     document.getElementById("todayCount").textContent = data.today || 0;
     document.getElementById("warningCount").textContent = data.warnings || 0;
-    document.getElementById("todayWarningCount").textContent = data.todayWarnings || 0;
-    document.getElementById("qaCount").textContent = data.qa || 0;
+    document.getElementById("todayWarningCount").textContent = data.today_warnings || 0;
+    document.getElementById("qaCount").textContent = data.qa_count || 0;
 
-    // 你可以用图表库（如 ECharts）来渲染 chart-placeholder
-    renderChart(data.chartData || []);
+    // 渲染识别趋势图表
+    const chartPlaceholder = document.getElementById('chart-placeholder');
+    if (chartPlaceholder && data.detection_trend && data.detection_trend.length > 0) {
+        renderChart(data.detection_trend);
+    } else if (chartPlaceholder) {
+        chartPlaceholder.innerHTML = '暂无识别趋势数据';
+    }
+}
+
+// 图表渲染函数
+function renderChart(trendData) {
+    const chartPlaceholder = document.getElementById('chart-placeholder');
+    if (!chartPlaceholder) return;
+    
+    chartPlaceholder.innerHTML = '';
+    
+    // 创建简单的柱状图
+    const maxValue = Math.max(...trendData.map(item => item.count));
+    const chartHtml = trendData.map(item => {
+        const height = (item.count / (maxValue || 1) * 100);
+        return `<div class="chart-bar" style="height:${height}%" title="${item.date}: ${item.count}次"></div>`;
+    }).join('');
+    
+    // 创建日期标签
+    const labelsHtml = trendData.map(item => 
+        `<div class="chart-label">${item.date}</div>`
+    ).join('');
+    
+    chartPlaceholder.innerHTML = `
+        <div class="simple-chart">${chartHtml}</div>
+        <div class="chart-labels">${labelsHtml}</div>
+    `;
 }
 
 //异常预警
