@@ -106,8 +106,6 @@
                         <tr>
                             <th>时间</th>
                             <th>检测对象</th>
-                            <th>置信度</th>
-                            <th>预警</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -193,8 +191,6 @@
                     row.innerHTML = `
                         <td>${date}</td>
                         <td>${record.detected_objects.join(', ')}</td>
-                        <td>${(record.confidence * 100).toFixed(1)}%</td>
-                        <td>${record.has_warning ? '⚠️' : '-'}</td>
                         <td>
                             ${record.image_id ? `<button onclick="viewImage(${record.image_id})">查看图片</button>` : ''}
                             ${record.frame_id ? `<button onclick="viewFrame(${record.frame_id})">查看帧</button>` : ''}
@@ -205,7 +201,7 @@
             } catch (error) {
                 console.error('Failed to load history:', error);
                 const tbody = document.getElementById('historyTableBody');
-                tbody.innerHTML = '<tr><td colspan="5">加载历史记录失败</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3">加载历史记录失败</td></tr>';
             }
         }
 

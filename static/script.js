@@ -841,8 +841,6 @@ function renderHistoryData(dataArray) {
             <td>${item.time}</td>
             <td>${item.target}</td>
             <td>${item.result}</td>
-            <td>${item.confidence}</td>
-            <td>${item.warning ? '是' : '否'}</td>
         `;
 
         tbody.appendChild(row);
