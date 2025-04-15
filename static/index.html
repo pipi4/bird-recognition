@@ -2,11 +2,12 @@
 <html lang="zh" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="AI驱动的物体识别与知识查询平台">
     <title>BirdFinder - 智能物体识别助手</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/landing.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
 
     <script src="/static/tts.js"></script>
     <script src="/static/script.js"></script> <!-- 最后引入你的主逻辑 -->
@@ -18,24 +19,30 @@
 <body>
 <header class="app-header">
     <div class="header-content">
-        <h1 aria-label="BirdFinder">🔍 BirdFinder</h1>
+        <h1 aria-label="BirdFinder"><i class="ri-search-2-line"></i>BirdFinder</h1>
+
+        <button class="menu-toggle" aria-label="菜单">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
         <nav class="nav-container">
-
             <ul class="nav-links">
-
-                <li><a href="/static/landing.html">主页</a></li>
-                <li><a href="#" onclick="openPopup('historyPopup')" class="nav-btn">历史记录</a></li>
-                <li><a href="#" onclick="openPopup('alertsPopup')" class="nav-btn">异常预警</a></li>
-                <li><a href="#" onclick="openPopup('dashboardPopup')" class="nav-btn">数据看板</a></li>
-                <li><a href="/static/about.html">关于我们</a></li>
-
-
+                <li><a href="/static/landing.html"><i class="ri-home-4-line"></i>主页</a></li>
+                <li><a href="#" onclick="openPopup('historyPopup')"><i class="ri-history-line"></i>历史记录</a></li>
+                <li><a href="#" onclick="openPopup('alertsPopup')"><i class="ri-alarm-warning-line"></i>异常预警</a></li>
+                <li><a href="#" onclick="openPopup('dashboardPopup')"><i class="ri-dashboard-line"></i>数据看板</a></li>
+                <li><a href="/static/about.html"><i class="ri-information-line"></i>关于我们</a></li>
             </ul>
-            <button id="themeToggle" class="theme-toggle" aria-label="切换主题">🌓</button>
+            <button id="themeToggle" class="theme-toggle" aria-label="切换主题">
+                <i class="ri-moon-line"></i>
+            </button>
         </nav>
     </div>
 </header>
+
+<div class="overlay"></div>
 
 <main class="main-container">
     <!-- 智能识别模块 -->

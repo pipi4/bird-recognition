@@ -915,3 +915,62 @@ function updateAlerts(alerts) {
     });
 }
 
+// 移动端菜单处理
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navContainer = document.querySelector('.nav-container');
+    const overlay = document.querySelector('.overlay');
+    const themeToggle = document.getElementById('themeToggle');
+    const moonIcon = 'ri-moon-line';
+    const sunIcon = 'ri-sun-line';
+
+    // 切换菜单状态
+    function toggleMenu() {
+        menuToggle.classList.toggle('active');
+        navContainer.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = navContainer.classList.contains('active') ? 'hidden' : '';
+    }
+
+    // 关闭菜单
+    function closeMenu() {
+        menuToggle.classList.remove('active');
+        navContainer.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // 菜单按钮点击事件
+    menuToggle.addEventListener('click', toggleMenu);
+
+    // 遮罩层点击事件
+    overlay.addEventListener('click', closeMenu);
+
+    // 导航链接点击事件
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                closeMenu();
+            }
+        });
+    });
+
+    // 主题切换
+    let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeToggle.innerHTML = `<i class="${isDark ? sunIcon : moonIcon}"></i>`;
+
+    themeToggle.addEventListener('click', () => {
+        isDark = !isDark;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        themeToggle.innerHTML = `<i class="${isDark ? sunIcon : moonIcon}"></i>`;
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    // 窗口大小改变时处理
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMenu();
+        }
+    });
+});
+
