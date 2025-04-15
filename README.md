@@ -8,9 +8,20 @@
 
 ## 项目安装
 
-### Python依赖项安装
+### 仓库克隆
 
-`pip install -r requirements.txt`
+```bash
+git clone https://github.com/pipi4/bird-recognition
+cd bird-recognition
+```
+
+### Python环境
+
+激活python虚拟环境后使用下面命令安装依赖项：
+
+```bash
+pip install -r requirements.txt
+```
 
 ### 配置环境变量
 
@@ -22,9 +33,20 @@ WEIGHTS_PATH=path/to/your/weights
 
 # 设置置信度阈值(默认0.25)
 YOLO_CONF_THRESHOLD=0.5
+```
 
-# 设置deepseek的api
-DEEPSEEK_API_KEY=your_api_key
+### Ollama大模型
+
+安装[Ollama](https://ollama.com)后，运行下面命令拉取使用鸟类数据微调后的deepseek-r1:1.5b大语言模型：
+
+```bash
+ollama pull hf.co/pipa223/deepseekr1_1.5b_bird2
+```
+
+运行大模型
+
+```bash
+ollama serve
 ```
 
 ### 运行项目
