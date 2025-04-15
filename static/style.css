@@ -1,20 +1,22 @@
 :root {
-    --primary: #1f51c3;
-    --secondary: #431c83;
+    --primary: #2e7d32; /* 森林绿色 */
+    --secondary: #1b5e20; /* 深森林绿色 */
     --background: #f8fafc;
     --text: #1e293b;
     --card-bg: rgba(255, 255, 255, 0.95);
     --border-color: rgba(0, 0, 0, 0.1);
+    --accent: #4caf50; /* 亮绿色作为强调色 */
 }
 
 /* 设置暗模式下背景色、字体颜色等 */
 [data-theme="dark"] {
-    --primary: #4f549a;
-    --secondary: #8d7eb3;
+    --primary: #4caf50; /* 亮绿色 */
+    --secondary: #2e7d32; /* 森林绿色 */
     --background: rgba(30, 30, 30, 0.94);  /* 页面背景 */
     --text: #e2e8f0;  /* 字体颜色 */
     --card-bg: rgba(30, 30, 30, 0.95);  /* 卡片背景 */
     --border-color: rgba(255, 255, 255, 0.1);  /* 边框颜色 */
+    --accent: #81c784; /* 更亮的绿色作为强调色 */
 }
 
 /* 确保导航栏和各个模块背景色在暗模式下变暗 */
@@ -67,29 +69,193 @@
 }
 
 body {
-    background: var(--background);
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa, #e5e9f2);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     color: var(--text);
     line-height: 1.6;
     min-height: 100vh;
-
-     background-image: url('/static/images/05.png');
-    background-size: cover;       /* 图片铺满页面 */
-    background-repeat: no-repeat; /* 不重复 */
-    background-attachment: fixed; /* 页面滚动时背景固定 */
-    background-position: center;  /* 居中显示 */
+    background-image: url('/static/images/05.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    transition: background-image 0.3s ease;
 }
 
+[data-theme="dark"] body {
+    background-image: url('/static/images/05_drak.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #fff;
+}
+
+/* 统一导航栏样式 */
 .app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+}
+
+.header-content {
+    max-width: 1800px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    gap: 3rem;
+}
+
+.header-content h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.nav-links a:hover {
+    color: var(--primary);
+    background: rgba(46, 125, 50, 0.1);
+}
+
+.nav-links a.active {
+    color: var(--primary);
+    background: rgba(46, 125, 50, 0.1);
+}
+
+/* 主题切换按钮样式优化 */
+.theme-toggle {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 主容器样式调整，防止被导航栏遮挡 */
+.main-container {
+    max-width: 1400px;
+    margin: 140px auto 2rem;
+    padding: 2rem 4rem;
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+}
+
+/* 卡片基础样式优化 */
+.card {
+    width: 100%;
+    height: 100%;
+    min-width: 0; /* 防止网格项溢出 */
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem; /* 减小内边距 */
+    margin-bottom: 1.5rem; /* 减小底部间距 */
+    position: relative;
+    z-index: 1;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.15);
+}
+
+[data-theme="dark"] .card {
+    background: var(--card-bg);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+}
+
+/* 按钮统一样式 */
+.custom-upload-btn,
+.send-btn,
+.record-btn,
+button {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: sticky;
-
-    top: 0;
-    z-index: 100;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
 }
+
+.custom-upload-btn:hover,
+.send-btn:hover,
+.record-btn:hover,
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+}
+
 /* 使用 ::before 添加背景图片 */
 .app-header::before {
     content: "";
@@ -98,7 +264,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('/static/images/05.png');
+    background-image: url('/static/images/05.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -111,15 +277,6 @@ body {
     background: linear-gradient(45deg, #4b6cb7, #182848); /* 设置更暗的按钮颜色 */
 }
 
-
-.header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .theme-switch button {
     background: none;
     border: none;
@@ -128,70 +285,124 @@ body {
     cursor: pointer;
 }
 
-.main-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(2, 1fr); /* 创建两列 */
-    grid-template-rows: auto auto; /* 两行 */
+/* 调整卡片标题样式 */
+.section-header {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-/* 确保智能识别和检测结果占据第一行 */
-.upload-section {
-    grid-column: 1; /* 第一列 */
-    padding-top: 2rem;  /* 增加顶部间距 */
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.result-section {
-    grid-column: 2; /* 第二列 */
-    padding-top: 2rem;  /* 增加顶部间距 */
-}
-
-/* 让智能助手横跨两列，确保拉伸 */
+/* 聊天界面样式优化 */
 .chat-section {
     grid-column: span 2;
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
-/* 让鸟类介绍模块横跨两列 */
-.wiki-section {
-    grid-column: span 2;
-    width: 100%;
-}
-
-
-.card {
+.chat-interface {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-radius: 15px;
     background: var(--card-bg);
-    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    height: auto;
+    min-height: 400px;
+    max-height: 70vh;
+}
+
+.chat-history {
+    height: auto;
+    min-height: 300px;
+    max-height: calc(70vh - 100px);
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     border: 1px solid var(--border-color);
 }
 
-.section-header {
-    margin-bottom: 1.5rem;
+/* 调整智能识别和检测结果区域的布局 */
+.upload-section, .result-section {
+    margin-bottom: 2rem;
 }
 
+/* 上传按钮统一样式 */
 .input-group {
     display: flex;
-    justify-content: center;
+    gap: 1rem;
     align-items: center;
-    gap: 12px;
-    width: 100%;
-    margin: 20px 0;
+    flex-wrap: wrap;
 }
 
-/* 图片上传区域 */
+.custom-upload-btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 200px;
+    height: 44px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.2rem !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.custom-upload-btn:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-upload-btn.active {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+/* Hide file input */
+.custom-upload-btn input[type="file"] {
+    display: none;
+}
+
+/* 调整图片预览容器的大小 */
 .preview-container {
+    margin-top: 1.2rem;
     position: relative;
-    aspect-ratio: 4/3;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    z-index: 1;
+    aspect-ratio: 16/9; /* 更合适的宽高比 */
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
     overflow: hidden;
     border: 2px dashed var(--border-color);
+    transition: all 0.3s ease;
+    width: 100%;
+    max-height: 60vh; /* 限制最大高度 */
+    min-height: 200px; /* 设置最小高度 */
+}
+
+.preview-container:hover {
+    border-color: var(--primary);
+    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.1);
 }
 
 .image-preview {
@@ -228,10 +439,12 @@ body {
     flex-direction: column;
     color: white;
     z-index: 10;
+    backdrop-filter: blur(3px);
 }
 
 .processing-overlay p {
     margin-top: 1rem;
+    font-weight: 500;
 }
 
 .loader {
@@ -248,117 +461,56 @@ body {
     100% { transform: rotate(360deg) }
 }
 
-/* 上传按钮 */
-.custom-upload-btn {
-    width: 160px !important;  /* Force exact width */
-    height: 48px !important;  /* Force exact height */
-    padding: 0 !important;    /* Remove padding */
-    margin: 0 !important;     /* Remove margin */
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(45deg, var(--primary), var(--secondary));
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-    font-size: 16px !important;
-    font-weight: 500;
-    white-space: nowrap;
-    text-align: center;
-    gap: 8px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* 思考中的旋转动画 */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* 旋转动画样式 */
-.send-btn .thinking-icon {
-    animation: spin 1s linear infinite; /* 旋转动画 */
-}
-
-.custom-upload-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.custom-upload-btn.active {
-    background: linear-gradient(45deg, #e74c3c, #c0392b);
-    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
-}
-
-/* Hide file input */
-.custom-upload-btn input[type="file"] {
-    display: none;
-}
-
-/* 结果区域 */
-.result-grid {
-    display: grid;
-    gap: 2rem;
-    grid-template-rows: 0.5fr 3fr;
-
-}
-
-
-
-/* 结果图片容器 */
-.result-image-container {
-    margin-top: 1rem; /* 增加顶部间距 */
-    padding: 0.5rem; /* 压缩周围的间距 */
-    border: 2px dashed var(--border-color);
-}
-
-.result-image-container, .detected-objects {
-    display: flex;
-    flex-direction: column;
-     margin: 0;
-    padding: 0;
-
-
-    border-radius: 8px;
-    align-items: stretch;
-}
-
+/* 调整结果图片容器的大小 */
 .result-image {
-    aspect-ratio: 4/2.7;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    aspect-ratio: 16/9; /* 统一的宽高比 */
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     border: 1px solid var(--border-color);
     margin-bottom: 0;
+    overflow: hidden;
+    width: 100%;
+    max-height: 60vh; /* 限制最大高度 */
+    min-height: 200px; /* 设置最小高度 */
 }
 
 .result-image img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border-radius: 6px;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.result-image img:hover {
+    transform: scale(1.02);
 }
 
 .object-list {
     list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding-bottom: 0;
 }
 
 .object-list li {
-    padding: 0.5rem 0.75rem;
-    background: rgba(37, 99, 235, 0.1); /* 这是 #2563eb 的 RGB 值 */
-    border-radius: 6px;
-    border-left: 3px solid var(--primary);
+    padding: 0.8rem 1rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .placeholder-item {
+    color: var(--text);
     opacity: 0.6;
     font-style: italic;
 }
@@ -367,63 +519,61 @@ body {
 .chat-interface {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    border-radius: 8px;
+    gap: 1.5rem;
+    border-radius: 15px;
+    background: var(--card-bg);
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
 }
 
 .chat-history {
-    height: 300px;
+    height: 400px; /* 增加聊天历史高度 */
     overflow-y: auto;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.03);
-    border-radius: 8px;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-
+    gap: 1rem;
+    border: 1px solid var(--border-color);
 }
 
 .message {
     max-width: 80%;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
 }
 
 .user-message {
     align-self: flex-end;
     background: var(--primary);
     color: white;
+    border-bottom-right-radius: 5px;
 }
 
 .bot-message {
     align-self: flex-start;
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.input-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    position: relative;
-}
-/* 文本输入框 */
-.message-input {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 30px;
-    background: var(--card-bg);
-    color: var(--text);
-    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom-left-radius: 5px;
 }
 
 .input-group input {
     flex: 1;
-    padding: 0.75rem 1rem;
+    padding: 0.9rem 1.2rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 30px;
     background: var(--card-bg);
     color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
 .send-btn {
@@ -431,13 +581,14 @@ body {
     color: white;
     border: none;
     border-radius: 50%;
-    padding: 0.75rem;
+    padding: 0.9rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s ease;
-    font-size: 1.5rem; /* 可以调节箭头的大小 */
+    transition: all 0.3s ease;
+    font-size: 1.5rem;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
 }
 
 .record-btn {
@@ -445,80 +596,275 @@ body {
     color: white;
     border: none;
     border-radius: 50%;
-    padding: 0.75rem;
+    padding: 0.9rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s ease;
-    font-size: 1rem; /* 可以调节箭头的大小 */
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
 }
 
 .record-btn:hover {
     background: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
 .send-btn:hover {
     background: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
 .send-icon {
     font-size: 1rem; /* 调整箭头的大小 */
 }
 
-/* 响应式布局 */
+/* 响应式布局断点 */
+@media (max-width: 1400px) {
+    .main-container {
+        padding: 1.5rem 3rem;
+        gap: 1.5rem;
+    }
+
+    .card {
+        padding: 1.2rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .main-container {
+        padding: 1.5rem 2rem;
+        gap: 1.2rem;
+    }
+
+    .preview-container, .result-image {
+        max-height: 50vh;
+    }
+}
+
+@media (max-width: 992px) {
+    .main-container {
+        padding: 1.2rem;
+        gap: 1rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .chat-interface {
+        min-height: 350px;
+    }
+
+    .chat-history {
+        min-height: 250px;
+    }
+}
+
 @media (max-width: 768px) {
     .main-container {
         grid-template-columns: 1fr;
+        margin-top: 180px;
+        padding: 1rem;
     }
 
-    .result-grid {
-        grid-template-columns: 1fr;
+    /* 在移动端让所有部分都占满宽度 */
+    .upload-section,
+    .result-section,
+    .wiki-section,
+    .chat-section {
+        grid-column: 1 / -1;
+    }
+
+    .preview-container, .result-image {
+        max-height: 40vh;
+        min-height: 180px;
+    }
+
+    /* 优化移动端输入组件布局 */
+    .input-group {
+        flex-wrap: wrap;
+        gap: 0.8rem;
+    }
+
+    .custom-upload-btn {
+        max-width: none;
+        width: calc(33.33% - 0.67rem) !important;
+    }
+
+    .message-input {
+        width: calc(100% - 100px);
+    }
+}
+
+@media (max-width: 480px) {
+    .main-container {
+        margin-top: 160px;
+        padding: 0.8rem;
+    }
+
+    .card {
+        padding: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .preview-container, .result-image {
+        min-height: 150px;
     }
 
     .input-group {
         flex-direction: column;
+        width: 100%;
     }
 
-    .send-text {
-        display: none;
+    .custom-upload-btn {
+        width: 100% !important;
+        max-width: none;
     }
 
-    .send-icon {
-        display: inline;
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .input-group {
+        width: 100%;
+    }
+
+    .message-input {
+        width: calc(100% - 80px);
+    }
+}
+
+/* 确保图片和视频内容响应式显示 */
+.image-preview img,
+.result-image img,
+video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* 优化检测结果列表的响应式显示 */
+.detected-objects {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.detected-objects h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+
+.object-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.object-list li {
+    padding: 0.8rem 1rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.placeholder-item {
+    color: var(--text);
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* 优化鸟类介绍部分的响应式布局 */
+.wiki-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.wiki-card img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+}
+
+/* 确保弹窗在移动端也能良好显示 */
+@media (max-width: 768px) {
+    .popup-content {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .chart-container {
+        padding: 1rem;
     }
 }
 
 .fact-container {
-    padding: 20px;
-    border-radius: 8px;
+    padding: 25px;
+    border-radius: 15px;
     text-align: center;
     color: var(--text);
     background-size: cover;
     background-position: center;
-    transition: background 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    margin-top: 2rem;
 }
+
 #factBox {
     position: relative;
     color: #fff;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 10px;
+    padding: 25px;
+    border-radius: 15px;
     text-align: center;
-    font-size: 1.2rem;
-    min-height: 75px;
+    font-size: 1.3rem;
+    min-height: 80px;
     background-size: cover;
     background-position: center;
-    background-blend-mode: overlay; /* 让背景变淡 */
-    background-color: rgba(255, 255, 255, 0.5); /* 控制淡化程度 */
+    background-blend-mode: overlay;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+#factBox:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.15);
 }
 
 .dark-mode .bird-facts {
-    background: var(--card-bg); /* 使其背景颜色与其他卡片一致 */
-    color: var(--text); /* 确保文本颜色适配暗模式 */
-    border: 1px solid var(--border-color); /* 使边框颜色适配暗模式 */
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
-
 
 /* 导航容器 */
 .nav-container {
@@ -532,37 +878,86 @@ body {
     display: flex;
     gap: 1.5rem;
     list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
 }
 
 .nav-links a {
-    color: white;
+    color: #2c3e50;
     text-decoration: none;
-    font-weight: 500;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
-    transition: background 0.3s ease;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .nav-links a:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.nav-links a.active {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .nav-links li {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 0.8rem;
+        border-radius: 4px;
+    }
+
+    .nav-links a:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+    }
+
+    .header-content {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .theme-toggle {
+        margin-top: 1rem;
+    }
 }
 
 /* 主题切换按钮 */
 .theme-toggle {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    padding: 0.75rem;
-    border-radius: 50%;
+    background: transparent;
+    border: 2px solid #3498db;
+    color: #3498db;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
     cursor: pointer;
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .theme-toggle:hover {
-    transform: scale(1.1);
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    border-color: transparent;
 }
 
 /* 响应式调整 */
@@ -579,22 +974,25 @@ body {
 }
 
 [data-theme="dark"] .nav-links a {
-    color: var(--text);
+    color: #fff;
 }
 
 [data-theme="dark"] .theme-toggle {
-    background: rgba(255, 255, 255, 0.05);
+    border-color: #fff;
+    color: #fff;
 }
 
 [data-theme="dark"] .nav-links a:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, #3498db 0%, #1a1a1a 100%);
 }
 
 /* 关于我们页面特定样式 */
 .about-container {
+    max-width: 1200px;
+    margin: 100px auto 2rem; /* 增加顶部边距，确保不被导航栏遮挡 */
+    padding: 0 2rem;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
-    padding: 2rem 1rem;
 }
 
 .about-section {
@@ -663,7 +1061,7 @@ body {
 
 /* 修复输入框样式 */
 [data-theme="dark"] .input-group input {
-    background: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -738,7 +1136,6 @@ body > * {
     display: none;      /* 默认隐藏 */
     background-color: rgba(0, 0, 0, 0.5); /* 背景半透明遮罩 */
     z-index: 1000;       /* 确保弹窗在最上层 */
-    display: none;
     justify-content: center;
     align-items: center;
 }
@@ -765,7 +1162,6 @@ body > * {
     height: 100%;
     background: rgba(0,0,0,0.5);
     z-index: 999;
-    display: none;
     justify-content: center;
     align-items: center;
 }
@@ -1511,6 +1907,131 @@ body > * {
     .chart-container {
         padding: 10px;
     }
+}
+
+[data-theme="dark"] .popup-content {
+    background-color: #2c3e50;  /* 深色但不完全黑的背景 */
+    color: #ffffff;  /* 白色文字 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .popup-overlay {
+    background-color: rgba(0, 0, 0, 0.8);  /* 更深的遮罩 */
+}
+
+[data-theme="dark"] .close-btn {
+    color: #ffffff;
+}
+
+/* 历史记录表格样式优化 */
+[data-theme="dark"] .history-table th {
+    background-color: #34495e;
+    color: #ffffff;
+    border-color: #2c3e50;
+}
+
+[data-theme="dark"] .history-table td {
+    border-color: #2c3e50;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .history-table tr:hover {
+    background-color: #2c3e50;
+}
+
+/* 数据看板样式优化 */
+[data-theme="dark"] .stat-card {
+    background-color: #34495e;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .stat-card h3 {
+    color: #bdc3c7;
+}
+
+[data-theme="dark"] .stat-card p {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .chart-container {
+    background-color: #2c3e50;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 异常预警设置样式优化 */
+[data-theme="dark"] .setting-group {
+    background-color: #34495e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .species-input-group input {
+    background-color: #2c3e50;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .species-list {
+    background-color: #2c3e50;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .species-item {
+    background-color: #34495e;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .empty-list {
+    color: #bdc3c7;
+}
+
+/* 按钮样式优化 */
+[data-theme="dark"] button {
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: #ffffff;
+}
+
+[data-theme="dark"] button:hover {
+    background: linear-gradient(135deg, #2980b9, #2c3e50);
+}
+
+/* 确保所有文本输入框在暗色模式下可见 */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] textarea {
+    background-color: #2c3e50;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] input[type="text"]::placeholder,
+[data-theme="dark"] input[type="number"]::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: #bdc3c7;
+}
+
+/* 思考中的旋转动画 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 旋转动画样式 */
+.send-btn .thinking-icon {
+    animation: spin 1s linear infinite; /* 旋转动画 */
+}
+
+/* 结果区域 */
+.result-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    height: 100%;
+}
+
+/* 让鸟类介绍横跨两列 */
+.wiki-section {
+    grid-column: span 2;
 }
 
 

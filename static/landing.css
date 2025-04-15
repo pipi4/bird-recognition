@@ -1,0 +1,345 @@
+/* Landing Page Styles */
+.landing-page {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.transparent {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 100px 10%;
+    min-height: 80vh;
+    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(195,207,226,0.8) 100%);
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(45deg, #2c3e50, #3498db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.hero-image {
+    flex: 1;
+    max-width: 500px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.hero-image img {
+    width: 100%;
+    height: auto;
+}
+
+/* Features Section */
+.features {
+    padding: 100px 10%;
+    background: #fff;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+/* Technology Section */
+.technology {
+    padding: 100px 10%;
+    background: #f8f9fa;
+}
+
+.technology h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+}
+
+.tech-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.tech-item {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.tech-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.stat-label {
+    color: #666;
+}
+
+/* Ecosystem Section */
+.ecosystem {
+    padding: 100px 10%;
+    background: #fff;
+}
+
+.ecosystem h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+}
+
+.ecosystem-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.ecosystem-item {
+    text-align: center;
+    padding: 2rem;
+}
+
+.ecosystem-item img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 1.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* CTA Section */
+.cta {
+    padding: 100px 10%;
+    text-align: center;
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: #fff;
+}
+
+.cta h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+/* Buttons */
+.primary-button, .secondary-button, .cta-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.primary-button {
+    background: #3498db;
+    color: #fff;
+}
+
+.secondary-button {
+    background: transparent;
+    border: 2px solid #3498db;
+    color: #3498db;
+}
+
+.cta-button {
+    background: #fff;
+    color: #3498db;
+}
+
+.primary-button:hover, .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.secondary-button:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+/* Footer */
+.landing-footer {
+    background: #2c3e50;
+    color: #fff;
+    padding: 4rem 10% 2rem;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-section a {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+    color: #3498db;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Animations */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 50px 5%;
+    }
+
+    .hero-content {
+        margin-bottom: 2rem;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .features, .technology, .ecosystem, .cta {
+        padding: 50px 5%;
+    }
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] {
+    .landing-page {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+    }
+
+    .transparent {
+        background: rgba(28, 28, 28, 0.95);
+    }
+
+    .hero {
+        background: linear-gradient(135deg, rgba(26,26,26,0.8) 0%, rgba(44,62,80,0.8) 100%);
+    }
+
+    .feature-card, .tech-item {
+        background: #2c3e50;
+        color: #fff;
+    }
+
+    .feature-card h3, .tech-item h3 {
+        color: #fff;
+    }
+
+    .technology {
+        background: #1a1a1a;
+    }
+
+    .ecosystem {
+        background: #2c3e50;
+        color: #fff;
+    }
+
+    .stat-label {
+        color: #ccc;
+    }
+} 

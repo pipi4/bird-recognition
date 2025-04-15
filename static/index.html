@@ -6,6 +6,7 @@
     <meta name="description" content="AI驱动的物体识别与知识查询平台">
     <title>BirdFinder - 智能物体识别助手</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/landing.css">
 
     <script src="/static/tts.js"></script>
     <script src="/static/script.js"></script> <!-- 最后引入你的主逻辑 -->
@@ -19,17 +20,17 @@
 <body>
 <header class="app-header">
     <div class="header-content">
-        <h1 aria-label="智能识别">🔍 BirdFinder</h1>
+        <h1 aria-label="BirdFinder">🔍 BirdFinder</h1>
 
         <nav class="nav-container">
 
             <ul class="nav-links">
 
-                <li><a href="/static/index.html">首页</a></li>
+                <li><a href="/static/landing.html">主页</a></li>
+                <li><a href="#" onclick="openPopup('historyPopup')" class="nav-btn">历史记录</a></li>
+                <li><a href="#" onclick="openPopup('alertsPopup')" class="nav-btn">异常预警</a></li>
+                <li><a href="#" onclick="openPopup('dashboardPopup')" class="nav-btn">数据看板</a></li>
                 <li><a href="/static/about.html">关于我们</a></li>
-                <li><a  onclick="openPopup('historyPopup')" class="nav-btn">历史记录</a></li>
-                <li><a onclick="openPopup('alertsPopup')" class="nav-btn">异常预警</a></li>
-                <li><a onclick="openPopup('dashboardPopup')" class="nav-btn">数据看板</a></li>
 
 
             </ul>

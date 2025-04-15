@@ -1,19 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
     try {
         // 获取当前页面路径
-        const currentPage = window.location.pathname.split('/').pop();
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
-        // 只在首页初始化特定模块
-        if (currentPage === 'index.html' || currentPage === '') {
-            initChatModule();
-            initImageUploadModule();
-            initBirdFactModule();
-            initSpeechRecognitionModule();  // 初始化语音识别模块
-        }
-
-        // 通用初始化（所有页面都需要）
+        // 初始化主题（所有页面都需要）
         initTheme();
+        
+        // 初始化鸟类趣闻（所有页面都需要）
         initBirdFactModule();
+
+        // 只在 index.html 页面初始化特定模块
+        if (currentPage === 'index.html') {
+            try {
+                initImageUploadModule();
+                initChatModule();
+                initSpeechRecognitionModule();
+            } catch (error) {
+                console.error("功能模块初始化失败:", error);
+            }
+        }
     } catch (error) {
         console.error("初始化失败:", error);
         // 更友好的错误处理
@@ -40,15 +45,7 @@ function initTheme() {
 
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    // 设置背景图片
-    const body = document.body;
-    if (theme === 'dark') {
-        body.style.backgroundImage = 'url("/static/images/05_dark.png")'; // 替换为你希望的暗色背景图片
-        body.style.backgroundSize = 'cover';
-    } else {
-        body.style.backgroundImage = 'url("/static/images/05.png")'; // 替换为你希望的亮色背景图片
-        body.style.backgroundSize = 'cover';
-    }
+    localStorage.setItem('theme', theme);
 }
 
 // 通用工具函数
@@ -724,7 +721,7 @@ function initBirdFactModule() {
         "/static/images/02.jpg",
         "/static/images/03.jpg",
         "/static/images/04.png",
-        "/static/images/05.png",
+        "/static/images/05.jpg",
         "/static/images/06.png"
     ];
 

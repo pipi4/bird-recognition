@@ -6,7 +6,12 @@
     <meta name="description" content="AI驱动的物体识别与知识查询平台">
     <title>关于我们 - BirdFinder</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/landing.css">
+    <script src="/static/tts.js"></script>
     <script src="/static/script.js"></script>
+    <script src="/static/camera.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 </head>
 <body>
     <header class="app-header">
@@ -14,7 +19,11 @@
             <h1 aria-label="BirdFinder">🔍 BirdFinder</h1>
             <nav class="nav-container">
                 <ul class="nav-links">
-                    <li><a href="/static/index.html">首页</a></li>
+                    <li><a href="/static/landing.html">主页</a></li>
+                    <li><a href="/static/index.html">功能体验</a></li>
+                    <li><a href="#" onclick="openPopup('historyPopup')" class="nav-btn">历史记录</a></li>
+                    <li><a href="#" onclick="openPopup('alertsPopup')" class="nav-btn">异常预警</a></li>
+                    <li><a href="#" onclick="openPopup('dashboardPopup')" class="nav-btn">数据看板</a></li>
                     <li><a href="/static/about.html" class="active">关于我们</a></li>
                 </ul>
                 <button id="themeToggle" class="theme-toggle" aria-label="切换主题">🌓</button>
@@ -57,7 +66,7 @@
 我们基于公开数据集和迁移学习方法，自主训练了鸟类图像识别模型。模型采用深度卷积神经网络结构，具备较强的图像分类与特征提取能力，支持用户上传图片后快速识别鸟的种类。</p>
             <p class="about-content">
                 <strong>🔗 联通维基百科的知识库：</strong><br>
-识别出鸟类种类后，系统会自动检索维基百科等权威资料来源，为用户呈现详细的鸟类介绍、生态习性及保护现状，实现“识别即科普”的智能化体验。</p>
+识别出鸟类种类后，系统会自动检索维基百科等权威资料来源，为用户呈现详细的鸟类介绍、生态习性及保护现状，实现"识别即科普"的智能化体验。</p>
             <p class="about-content">
                 <strong>🤖 集成 DeepSeek API 智能助手：</strong><br>
 我们嵌入了 DeepSeek API 接口，构建 AI 问答助手模块，支持自然语言对话。用户可像与专家交流一样，提问鸟类相关问题，系统将基于上下文智能生成答复。</p>
@@ -86,6 +95,322 @@
         <p id="factBox">探索自然界的奥秘，从识别一只鸟开始...</p>
     </footer>
 
+    <!-- 历史检测记录 弹窗 -->
+    <div id="historyPopup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closePopup('historyPopup')">&times;</span>
+            <h2>📜 历史检测记录</h2>
+            <div class="history-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>检测对象</th>
+                            <th>置信度</th>
+                            <th>预警</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- 动态插入历史记录 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 异常预警弹窗 -->
+    <div id="alertsPopup" class="popup">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closePopup('alertsPopup')">&times;</span>
+            <h2>异常预警设置</h2>
+
+            <div class="alert-settings">
+                <div class="setting-group">
+                    <h3>物种预警</h3>
+                    <div class="species-input-group">
+                        <input type="text" id="speciesInput" placeholder="输入鸟类物种名称">
+                        <button id="addSpeciesBtn" class="primary-btn">添加</button>
+                    </div>
+                    <div class="species-list" id="speciesList">
+                        <!-- 动态插入物种预警项 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据看板弹窗 -->
+    <div id="dashboardPopup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closePopup('dashboardPopup')">&times;</span>
+            <h2>📊 数据看板</h2>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>总识别数</h3>
+                    <p id="totalCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>今日识别数</h3>
+                    <p id="todayCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>总预警数</h3>
+                    <p id="warningCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>今日预警数</h3>
+                    <p id="todayWarningCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>问答次数</h3>
+                    <p id="qaCount">0</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>识别趋势</h3>
+                <div id="chart-placeholder" class="chart-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 加载历史检测记录
+        async function loadHistory() {
+            try {
+                const response = await fetch('/yolo/history');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const history = await response.json();
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = ''; // Clear existing content
+                
+                history.forEach(record => {
+                    const row = document.createElement('tr');
+                    const date = new Date(record.created_at).toLocaleString();
+                    
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${record.detected_objects.join(', ')}</td>
+                        <td>${(record.confidence * 100).toFixed(1)}%</td>
+                        <td>${record.has_warning ? '⚠️' : '-'}</td>
+                        <td>
+                            ${record.image_id ? `<button onclick="viewImage(${record.image_id})">查看图片</button>` : ''}
+                            ${record.frame_id ? `<button onclick="viewFrame(${record.frame_id})">查看帧</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Failed to load history:', error);
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = '<tr><td colspan="5">加载历史记录失败</td></tr>';
+            }
+        }
+
+        async function viewImage(imageId) {
+            try {
+                const response = await fetch(`/yolo/download/${imageId}`);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            } catch (error) {
+                console.error('Failed to view image:', error);
+            }
+        }
+
+        async function viewFrame(frameId) {
+            try {
+                const response = await fetch(`/yolo/download/video/${frameId}`);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            } catch (error) {
+                console.error('Failed to view frame:', error);
+            }
+        }
+
+        // 加载数据看板统计信息
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/yolo/stats');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const stats = await response.json();
+                
+                // 从API获取所有统计数据，包括预警数
+                document.getElementById("totalCount").textContent = stats.total || 0;
+                document.getElementById("todayCount").textContent = stats.today || 0;
+                document.getElementById("warningCount").textContent = stats.warnings || 0;
+                document.getElementById("todayWarningCount").textContent = stats.today_warnings || 0;
+                document.getElementById("qaCount").textContent = stats.qa_count || 0;
+                
+                // 渲染识别趋势图表
+                const chartPlaceholder = document.getElementById('chart-placeholder');
+                if (stats.detection_trend && stats.detection_trend.length > 0) {
+                    renderSimpleChart(stats.detection_trend, chartPlaceholder);
+                } else {
+                    chartPlaceholder.innerHTML = '暂无识别趋势数据';
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard stats:', error);
+                document.getElementById("totalCount").textContent = '-';
+                document.getElementById("todayCount").textContent = '-';
+                document.getElementById("warningCount").textContent = '-';
+                document.getElementById("todayWarningCount").textContent = '-';
+                document.getElementById("qaCount").textContent = '-';
+                document.getElementById('chart-placeholder').innerHTML = '加载图表数据失败';
+            }
+        }
+
+        // 修改openPopup函数，使其在打开弹窗时加载相应的数据
+        function openPopup(id) {
+            const popup = document.getElementById(id);
+            if (popup) {
+                popup.style.display = "flex"; // 使用flex布局替代block，确保居中
+                if (id === "historyPopup") {
+                    loadHistory();
+                } else if (id === "dashboardPopup") {
+                    loadDashboardStats();
+                } else if (id === "alertsPopup") {
+                    updateSpeciesList();
+                }
+            }
+        }
+
+        function closePopup(id) {
+            const popup = document.getElementById(id);
+            if (popup) {
+                popup.style.display = "none";  // 隐藏弹窗
+            }
+        }
+
+        // 简单图表渲染函数
+        function renderSimpleChart(data, container) {
+            // 生成简单的图表
+            container.innerHTML = '';
+            
+            // 确保有数据
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="no-data">暂无图表数据</div>';
+                return;
+            }
+            
+            // 找出最大值用于缩放
+            const maxValue = Math.max(...data.map(item => item.count)) || 1;
+            
+            // 创建Y轴刻度
+            const yAxisTickCount = 5; // 纵轴刻度数量
+            const yAxisTicks = [];
+            for (let i = 0; i <= yAxisTickCount; i++) {
+                const value = Math.round(maxValue * (yAxisTickCount - i) / yAxisTickCount);
+                yAxisTicks.push(value);
+            }
+            
+            // 创建Y轴HTML
+            const yAxisHtml = `
+                <div class="y-axis">
+                    ${yAxisTicks.map(tick => `<div class="y-axis-tick">${tick}</div>`).join('')}
+                </div>
+            `;
+            
+            // 图表柱状条
+            const chartBars = data.map(item => {
+                const height = Math.max((item.count / maxValue * 100), 3); // 至少3%的高度，以便看到
+                return `<div class="chart-bar" style="height:${height}%" title="${item.date}: ${item.count}次"></div>`;
+            }).join('');
+            
+            // 创建柱状图容器
+            const chartHtml = `<div class="simple-chart">${chartBars}</div>`;
+            
+            // 创建日期标签
+            const labelsHtml = `
+                <div class="chart-labels">
+                    ${data.map(item => `<div class="chart-label">${item.date}</div>`).join('')}
+                </div>
+            `;
+            
+            // 组合所有元素
+            container.innerHTML = `
+                <div class="chart-wrapper">
+                    ${yAxisHtml}
+                    ${chartHtml}
+                    ${labelsHtml}
+                </div>
+            `;
+            
+            // 控制台输出数据，方便调试
+            console.log("图表数据:", data);
+        }
+
+        // 初始化物种预警列表
+        let alertSpecies = JSON.parse(localStorage.getItem('alertSpecies') || '[]');
+        
+        // 添加物种预警
+        function addSpeciesAlert() {
+            const speciesInput = document.getElementById('speciesInput');
+            const species = speciesInput.value.trim();
+            
+            if (species && !alertSpecies.includes(species)) {
+                alertSpecies.push(species);
+                localStorage.setItem('alertSpecies', JSON.stringify(alertSpecies));
+                updateSpeciesList();
+                speciesInput.value = '';
+            }
+        }
+        
+        // 删除物种预警
+        function removeSpeciesAlert(species) {
+            alertSpecies = alertSpecies.filter(item => item !== species);
+            localStorage.setItem('alertSpecies', JSON.stringify(alertSpecies));
+            updateSpeciesList();
+        }
+        
+        // 更新物种列表显示
+        function updateSpeciesList() {
+            const speciesList = document.getElementById('speciesList');
+            speciesList.innerHTML = '';
+            
+            if (alertSpecies.length === 0) {
+                speciesList.innerHTML = '<div class="empty-list">暂无物种预警</div>';
+                return;
+            }
+            
+            alertSpecies.forEach(species => {
+                const item = document.createElement('div');
+                item.className = 'species-item';
+                item.innerHTML = `
+                    <span>${species}</span>
+                    <button class="delete-btn" onclick="removeSpeciesAlert('${species}')">×</button>
+                `;
+                speciesList.appendChild(item);
+            });
+        }
+
+        // 初始化事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化物种列表
+            updateSpeciesList();
+            
+            // 添加物种按钮点击事件
+            const addSpeciesBtn = document.getElementById('addSpeciesBtn');
+            if (addSpeciesBtn) {
+                addSpeciesBtn.addEventListener('click', addSpeciesAlert);
+            }
+            
+            // 输入框回车事件
+            const speciesInput = document.getElementById('speciesInput');
+            if (speciesInput) {
+                speciesInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        addSpeciesAlert();
+                    }
+                });
+            }
+        });
+    </script>
 
 </body>
 </html>
