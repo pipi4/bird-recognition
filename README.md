@@ -2,9 +2,9 @@
 
 ## Preview
 
-![](https://i.imgur.com/nbmXcKx.jpeg)
+![](https://i.imgur.com/drR5gQ6.jpeg)
 
-![](https://i.imgur.com/AVR2lx7.jpeg)
+![](https://i.imgur.com/nX8i6HI.jpeg)
 
 ## 项目安装
 
@@ -61,28 +61,41 @@ ollama serve
 
 ```text
 .
-├── README.md                     # 项目说明文档
-├── detectors/                   # 模型调用模块（如 YOLOv8）
-│   ├── __init__.py              # 包初始化
-│   └── yolov8.py                # YOLOv8 检测模型封装
-├── main.py                      # 程序主入口，FastAPI 应用启动点
-├── requirements.txt             # Python 项目依赖列表
-├── routers/                     # 路由模块，定义 API 路由
-│   ├── __init__.py              # 包初始化
-│   ├── deepseek.py              # 与 DeepSeek 模型相关的接口
-│   ├── web.py                   # Web 前端相关的 API 接口
-│   ├── wikipeida_api.py         # Wikipedia 查询相关接口（注：文件名可能有误，应为 wikipedia_api.py）
-│   └── yolo.py                  # YOLO 模型相关接口
-├── schemas/                     # 数据模型定义（Pydantic 模型）
-│   ├── __init__.py              # 包初始化
-│   └── yolo.py                  # 与 YOLO 检测相关的请求/响应数据结构
-└── static/                      # 静态资源文件夹（用于 Web 页面展示）
-    ├── about.html               # 关于页面
-    ├── images/                  # 图像资源文件夹
-    ├── index.html               # 首页 HTML 文件
-    ├── script.js                # 前端交互逻辑脚本
-    └── style.css                # 页面样式文件
+├── best.pt                 # 最优模型文件
+├── database.py             # 数据库交互文件
+├── detectors               # 检测器目录
+│   ├── __init__.py         # 初始化文件
+│   └── yolov8.py           # YOLOv8检测器实现
+├── docs                    # 文档目录
+│   ├── about.md            # 关于页面文档
+│   └── index.md            # 首页文档
+├── main.py                 # 主程序文件
+├── mkdocs.yml              # MkDocs配置文件
+├── README.md               # 项目README文件
+├── requirements.txt        # 依赖项列表
+├── routers                 # 路由器目录
+│   ├── __init__.py         # 初始化文件
+│   ├── llm.py              # 语言模型路由器
+│   ├── speech.py           # 语音路由器
+│   ├── web.py              # 网页路由器
+│   ├── wikipeida_api.py    # 维基百科API路由器
+│   └── yolo.py             # YOLO路由器
+├── schemas                 # 模式目录
+│   ├── __init__.py         # 初始化文件
+│   └── yolo.py             # YOLO模式定义
+└── static                  # 静态文件目录
+    ├── about.html          # 关于页面
+    ├── camera.js           # 相机处理脚本
+    ├── chat.js             # 聊天脚本
+    ├── images              # 图像目录
+    ├── index.html          # 首页
+    ├── landing.css         # 登陆页面样式
+    ├── landing.html        # 登陆页面
+    ├── processor.worker.js # 处理器工作线程
+    ├── script.js           # 主脚本文件
+    ├── style.css           # 样式文件
+    └── tts.js              # 文本到语音脚本
 
-7 directories, 19 files
+7 directories, 28 files
 
 ```
