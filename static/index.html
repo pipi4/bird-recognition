@@ -300,7 +300,10 @@
             
             history.forEach(record => {
                 const row = document.createElement('tr');
-                const date = new Date(record.created_at).toLocaleString();
+                // 将UTC时间转换为北京时间
+                const utcDate = new Date(record.created_at);
+                const beijingDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+                const date = beijingDate.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
                 
                 row.innerHTML = `
                     <td>${date}</td>

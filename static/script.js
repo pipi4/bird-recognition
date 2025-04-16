@@ -836,13 +836,19 @@ function renderHistoryData(dataArray) {
 
     dataArray.forEach(item => {
         const row = document.createElement("tr");
-
+        // 将UTC时间转换为北京时间
+        const utcDate = new Date(item.created_at);
+        const beijingDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+        const date = beijingDate.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+        
         row.innerHTML = `
-            <td>${item.time}</td>
-            <td>${item.target}</td>
-            <td>${item.result}</td>
+            <td>${date}</td>
+            <td>${item.detected_objects.join(', ')}</td>
+            <td>
+                ${item.image_id ? `<button onclick="viewImage(${item.image_id})">查看图片</button>` : ''}
+                ${item.frame_id ? `<button onclick="viewFrame(${item.frame_id})">查看帧</button>` : ''}
+            </td>
         `;
-
         tbody.appendChild(row);
     });
 }
@@ -973,4 +979,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// 创建预警信息时的时间显示
+function createAlert(message) {
+    const alertNotification = document.getElementById('alertNotification');
+    const alertMessage = document.getElementById('alertNotificationMessage');
+    const alertTime = document.getElementById('alertNotificationTime');
+    
+    const now = new Date();
+    const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const timeString = beijingTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+    
+    alertMessage.textContent = message;
+    alertTime.textContent = timeString;
+    
+    // 显示预警弹窗
+    alertNotification.style.display = 'block';
+    
+    // 5秒后自动关闭
+    setTimeout(() => {
+        closeAlertNotification();
+    }, 5000);
+
+    // 播报预警信息
+    speakAlertMessage(message);
+    
+    // 将预警保存到数据库
+    saveAlertToDatabase(message);
+    
+    // 记录到控制台以便调试
+    console.log("显示预警:", message);
+}
 
