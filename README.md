@@ -13,6 +13,9 @@
   - [Ollama大模型](#ollama大模型)
   - [运行项目](#运行项目)
   - [API 文档](#api-文档)
+- [模型训练](#模型训练)
+  - [YOLO鸟类识别模型](#YOLO鸟类识别模型)
+  - [Deepseek鸟类专家模型微调](#Deepseek鸟类专家模型微调)
 - [使用说明](#使用说明)
 - [注意事项](#注意事项)
 - [开发团队](#开发团队)
@@ -142,6 +145,35 @@ ollama serve
 ### API 文档
 
 运行项目后见<http://localhost:8000/docs>
+
+
+## 模型训练
+
+### YOLO鸟类识别模型
+
+Step1: 下载[CUB-200-2011](https://data.caltech.edu/records/65de6-vp158)数据集：
+
+```bash
+wget -O CUB_200_2011.tgz "https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz?download=1"
+```
+
+Step2: 将数据转换为YOLO格式
+
+[相关代码](https://gist.github.com/oodenough/445cff39ab5f2a9dd259ee0185ae8b8b)
+
+Step3: 超参数调整
+
+参考[Ultralytics YOLO Hyperparameter Tuning Guide - Ultralytics YOLO Docs](https://docs.ultralytics.com/guides/hyperparameter-tuning/)
+
+我们的[超参数调整代码](https://gist.github.com/oodenough/aef6579ec52a765e6cc9c6dcdf831f5f)
+
+Step4: 模型训练
+
+我们的[训练代码](https://gist.github.com/oodenough/44b3456156dcb1c20bd3a938e18de88b)
+
+### Deepseek鸟类专家模型微调
+
+我们的[colab 微调代码](https://colab.research.google.com/drive/1IWphlU8njqhAbYdlG_6H8iQrAI7e7hcV?usp=share_link#scrollTo=POnl9EzqVs3G)
 
 ## 使用说明
 上传鸟类图片进行识别
