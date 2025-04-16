@@ -16,7 +16,7 @@ import sqlite3
 # 创建一个API路由实例，路径前缀为/yolo，标签为"图像上传和识别"
 yolo_router = APIRouter(tags=["图像上传和识别"], prefix="/yolo")
 
-# region upload
+# region 图像上传
 # 定义图像上传的POST接口，路径为/yolo/upload
 @yolo_router.post(
     "/upload",
@@ -89,7 +89,9 @@ async def yolo_image_upload(file: UploadFile) -> ImageAnalysisResponse:
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail="图像处理失败",
     )
+# endregion
 
+# region 视频上传
 # 定义视频上传的POST接口，路径为/yolo/upload/video
 @yolo_router.post(
     "/upload/video",
@@ -130,6 +132,8 @@ async def yolo_video_upload(file: UploadFile):
 
     return StreamingResponse(
         generate(),
+        # 使用了 Server-Sent Events (SSE) 技术（text/event-stream）
+        # 每检测完一帧就立即返回该帧的结果，不等待整个视频处理完成
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -140,10 +144,9 @@ async def yolo_video_upload(file: UploadFile):
             "Access-Control-Allow-Headers": "Content-Type"
         }
     )
-
 # endregion
 
-# region download
+# region 图像下载
 # 定义图像下载的GET接口，路径为/yolo/download/{image_id}
 @yolo_router.get(
     "/download/{image_id}",
@@ -184,7 +187,9 @@ async def yolo_image_download(image_id: int) -> Response:
         )
     
     return Response(content=encoded_image.tobytes(), media_type="image/png")
+# endregion
 
+# region 视频帧下载
 # 定义视频帧下载的GET接口，路径为/yolo/download/video/{frame_id}
 @yolo_router.get(
     "/download/video/{frame_id}",
@@ -227,7 +232,7 @@ async def yolo_video_frame_download(frame_id: int) -> Response:
     return Response(content=encoded_frame.tobytes(), media_type="image/png")
 # endregion
 
-# region history
+# region 历史记录
 @yolo_router.get(
     "/history",
     status_code=status.HTTP_200_OK,
@@ -247,7 +252,7 @@ async def get_history(limit: int = 50):
     return history
 # endregion
 
-# region stats
+# region 统计数据
 @yolo_router.get(
     "/stats",
     status_code=status.HTTP_200_OK,
@@ -344,6 +349,7 @@ async def get_stats():
     
     return result
 
+# region 问答交互
 # 保存问答交互记录
 @yolo_router.post(
     "/qa",
@@ -376,7 +382,9 @@ async def save_qa(data: dict):
         "message": "问答记录保存成功",
         "success": True
     }
+# endregion
 
+# region 预警
 # 保存物种预警
 @yolo_router.post(
     "/alert",
